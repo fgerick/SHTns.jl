@@ -1,10 +1,22 @@
-module SHTns
+# Automatically generated using Clang.jl
 
-using CEnum
-# export
-# package code goes here
-const libshtns = :libshtns
-#"/Users/gerickf/Programs/shtns/libshtns"
+#
+# struct shtns_info
+#     nlm::UInt32
+#     lmax::UInt16
+#     mmax::UInt16
+#     mres::UInt16
+#     nphi::UInt16
+#     nlat::UInt16
+#     nlat_2::UInt16
+#     lmidx::Ptr{Cint}
+#     li::Ptr{UInt16}
+#     mi::Ptr{UInt16}
+#     ct::Ptr{Cdouble}
+#     st::Ptr{Cdouble}
+#     nspat::UInt32
+#     nlm_cplx::UInt32
+# end
 
 struct shtns_info
     nlm::Int32
@@ -27,14 +39,14 @@ const shtns_cfg = Ptr{shtns_info}
 const shtns_rot_ = Cvoid
 const shtns_rot = Ptr{shtns_rot_}
 
-@cenum shtns_norm::Int32 begin
+@cenum shtns_norm::UInt32 begin
     sht_orthonormal = 0
     sht_fourpi = 1
     sht_schmidt = 2
     sht_for_rotations = 3
 end
 
-@cenum shtns_type::Int32 begin
+@cenum shtns_type::UInt32 begin
     sht_gauss = 0
     sht_auto = 1
     sht_reg_fast = 2
@@ -43,14 +55,3 @@ end
     sht_reg_poles = 5
     sht_gauss_fly = 6
 end
-
-include("libshtns_api.jl")
-
-foreach(names(@__MODULE__, all=true)) do s
-   if startswith(string(s), "sht") || startswith(string(s), "SH") || startswith(string(s), "spat")
-       @eval export $s
-   end
-end
-
-
-end # module

@@ -3,6 +3,9 @@ uuid = "5dc4ea12-f621-4038-8458-a22eae100703"
 authors = ["Felix Gerick"]
 version = "0.1.0"
 
+[deps]
+CEnum = "fa961155-64e5-5f13-b03f-caf6b980ea82"
+
 [compat]
 julia = "1"
 
