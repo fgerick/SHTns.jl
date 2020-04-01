@@ -2,9 +2,7 @@ module SHTns
 
 using CEnum
 # export
-# package code goes here
 const libshtns = :libshtns
-#"/Users/gerickf/Programs/shtns/libshtns"
 
 struct shtns_info
     nlm::Int32
@@ -44,13 +42,19 @@ end
     sht_gauss_fly = 6
 end
 
+#include generated api
 include("libshtns_api.jl")
 
+#export most functions
 foreach(names(@__MODULE__, all=true)) do s
    if startswith(string(s), "sht") || startswith(string(s), "SH") || startswith(string(s), "spat")
        @eval export $s
    end
 end
 
+#sht macros
+LM(shtns, l,m)  = unsafe_load(shtns.lmidx,Cint(m/shtns.mres)) + l + 1
+
+export LM
 
 end # module

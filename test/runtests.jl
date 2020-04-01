@@ -10,21 +10,17 @@ using Test
     nlat = 32
     flags = sht_gauss
 
-    LM(shtns, l,m)  = unsafe_load(shtns.lmidx,Cint(m/shtns.mres)) + l + 1
 
     shtns_use_threads(0)
     shtns_verbose(1)
 
     sht1=shtns_init(flags,lmax, mmax, mres, nlat, nphi)
-    # nlm = unsafe_load(sht1).nlm+1
     sht=unsafe_load(sht1)
 
-    nlm = sht.nlm
-    nspat = sht.nspat
-    Slm = zeros(ComplexF64,nlm)
-    Tlm = zeros(ComplexF64,nlm)
-    Sh = zeros(Float64,nspat)
-    Th = zeros(Float64,nspat)
+    Slm = zeros(ComplexF64,sht.nlm)
+    Tlm = zeros(ComplexF64,sht.nlm)
+    Sh = zeros(Float64,sht.nlat,sht.nphi)
+    Th = zeros(Float64,sht.nlat,sht.nphi)
 
     Slm[LM(sht,2,0)] = 1.0
 
