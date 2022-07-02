@@ -24,9 +24,57 @@ struct shtns_info
     nlm_cplx::Cuint
 end
 
-
-
 const shtns_cfg = Ptr{shtns_info}
+
+struct SHTnsConfig
+    cfg::shtns_cfg
+    nlm::Int
+    lmax::Int
+    mmax::Int
+    mres::Int
+    nlat_2::Int
+    nlat::Int
+    nphi::Int
+    nspat::Int
+    li::Vector{Int}
+    mi::Vector{Int}
+    ct::Vector{Float64}
+    st::Vector{Float64}
+    nlat_padded::Int
+    nlm_cplx::Int
+end
+
+function SHTnsConfig(cfg::shtns_cfg) 
+    info = unsafe_load(cfg)
+    li = Vector{Int}(unsafe_wrap(Vector{Cushort},info.li,Int(info.nlm)))
+    mi = Vector{Int}(unsafe_wrap(Vector{Cushort},info.mi,Int(info.nlm)))
+    ct = unsafe_wrap(Vector{Float64},info.ct,Int(info.nlat))
+    st = unsafe_wrap(Vector{Float64},info.st,Int(info.nlat))
+
+    SHTnsConfig(cfg,
+            Int(info.nlm),
+            Int(info.lmax),
+            Int(info.mmax),
+            Int(info.mres),
+            Int(info.nlat_2),
+            Int(info.nlat),
+            Int(info.nphi),
+            Int(info.nspat),
+            li,
+            mi,
+            ct,
+            st,
+            Int(info.nlat_padded),
+            Int(info.nlm_cplx)
+    )
+end
+
+
+function SHTnsConfig(flags,lmax, mmax, mres, nlat, nphi)
+    return SHTnsConfig(shtns_init(flags,lmax, mmax, mres, nlat, nphi))
+end
+
+export SHTnsConfig
 
 const cplx = ComplexF32
 
