@@ -24,6 +24,8 @@ struct shtns_info
     nlm_cplx::Cuint
 end
 
+
+
 const shtns_cfg = Ptr{shtns_info}
 
 const cplx = ComplexF32
@@ -86,6 +88,6 @@ foreach(names(@__MODULE__, all=true)) do s
 #  LM(shtns, l,m)  = unsafe_load(shtns.lmidx,Cint(m/shtns.mres)) + l + 1
 export LM
 # LM(shtns, l,m)  = ( (((((unsigned short)(m))/shtns->mres)*(2*shtns->lmax + 2 - ((m)+shtns->mres)))>>1) + (l) )
-LM(shtns, l,m)  = (Cint(m/shtns.mres)*(2*shtns.lmax + 2 - (m+shtns.mres)))>>1 + l
+LM(shtns, l,m)  = (Cint(m/shtns.mres)*(2*shtns.lmax + 2 - (m+shtns.mres)))>>1 + l + 1
 
 end # module
