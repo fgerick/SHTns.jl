@@ -7,6 +7,3 @@
 
 This is WIP.
 
-Requires an installed shared version of [shtns](https://bitbucket.org/nschaeff/shtns/src/master/). Follow the install instructions and create a shared library that is available as `libshtns`.
-
-Install in Julia using `using Pkg; Pkg.add("https://github.com/fgerick/SHTns.jl.git")`.
