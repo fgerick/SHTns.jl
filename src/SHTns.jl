@@ -188,8 +188,8 @@ function LM(shtns, l,m)
     return (Cint(m/shtns.mres)*(2*shtns.lmax + 2 - (m+shtns.mres)))>>1 + l + 1
 end
 
-function LM_cplx(shtns, l, m)   
-    return (l <= shtns.mmax) ? l*(l+1)+m : shtns.mmax*(2l - shtns.mmax) + l+m
+function LM_cplx(shtns, l, m)
+    return (l <= shtns.mmax) ? l*(l+1)+m+1 : shtns.mmax*(2l - shtns.mmax) + l+m+1
 end
 
 export LM, LM_cplx
