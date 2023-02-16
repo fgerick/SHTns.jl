@@ -182,11 +182,16 @@ foreach(names(@__MODULE__, all=true)) do s
  
 #sht macros
 #  LM(shtns, l,m)  = unsafe_load(shtns.lmidx,Cint(m/shtns.mres)) + l + 1
-export LM
 # LM(shtns, l,m)  = ( (((((unsigned short)(m))/shtns->mres)*(2*shtns->lmax + 2 - ((m)+shtns->mres)))>>1) + (l) )
 function LM(shtns, l,m)  
     @assert 0<=m<=l
     return (Cint(m/shtns.mres)*(2*shtns.lmax + 2 - (m+shtns.mres)))>>1 + l + 1
 end
+
+function LM_cplx(shtns, l, m)   
+    return (l <= shtns.mmax) ? l*(l+1)+m : shtns.mmax*(2l - shtns.mmax) + l+m
+end
+
+export LM, LM_cplx
 
 end # module
