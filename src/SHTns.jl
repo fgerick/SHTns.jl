@@ -7,6 +7,23 @@ const libshtns = SHTns_jll.LibSHTns
 
 using CEnum
 
+@cenum shtns_norm::UInt32 begin
+    sht_orthonormal = 0
+    sht_fourpi = 1
+    sht_schmidt = 2
+    sht_for_rotations = 3
+end
+
+@cenum shtns_type::UInt32 begin
+    sht_gauss = 0
+    sht_auto = 1
+    sht_reg_fast = 2
+    sht_reg_dct = 3
+    sht_quick_init = 4
+    sht_reg_poles = 5
+    sht_gauss_fly = 6
+end
+
 struct shtns_info
     nlm::Cuint
     lmax::Cushort
@@ -70,36 +87,67 @@ function SHTnsConfig(cfg::shtns_cfg)
 end
 
 
-function SHTnsConfig(flags,lmax, mmax, mres, nlat, nphi)
-    return SHTnsConfig(shtns_init(flags,lmax, mmax, mres, nlat, nphi))
+function SHTnsConfig(shtype::shtns_type,lmax, mmax, mres, nlat, nphi) 
+    return SHTnsConfig(shtns_init(shtype,lmax, mmax, mres, nlat, nphi))
+end
+
+function SHTnsConfig(shtype::shtns_type,lmax, mmax, mres, nlat, nphi, norm::shtns_norm; eps::Float64=1e-10) 
+    cfg = shtns_create(lmax, mmax, mres, norm)
+    shtns_set_grid(cfg, shtype, eps, nlat, nphi)
+    return SHTnsConfig(cfg)
+end
+
+function SHTnsConfig(lmax, mmax, mres, norm::shtns_norm)
+    cfg = shtns_create(lmax, mmax, mres, norm)
+    SHTnsConfig(cfg)
 end
 
 export SHTnsConfig
 
-const cplx = ComplexF32
+const cplx = ComplexF64
 
-const cplx_f = ComplexF32
+const cplx_f = ComplexF64
 
 mutable struct shtns_rot_ end
 
 const shtns_rot = Ptr{shtns_rot_}
 
-@cenum shtns_norm::UInt32 begin
-    sht_orthonormal = 0
-    sht_fourpi = 1
-    sht_schmidt = 2
-    sht_for_rotations = 3
-end
 
-@cenum shtns_type::UInt32 begin
-    sht_gauss = 0
-    sht_auto = 1
-    sht_reg_fast = 2
-    sht_reg_dct = 3
-    sht_quick_init = 4
-    sht_reg_poles = 5
-    sht_gauss_fly = 6
-end
+# abstract type SHNorm end
+
+# struct OrthonormalNorm <: SHNorm; end
+# struct FourPiNorm <: SHNorm; end
+# struct SchmidtNorm <: SHNorm; end
+# struct RotationNorm <: SHNorm; end
+
+# OrthonormalNorm() = sht_orthonormal
+# FourPiNorm() = sht_fourpi
+# SchmidtNorm() = sht_schmidt
+# RotationNorm() = sht_for_rotations
+
+# export SHNorm, OrthonormalNorm, FourPiNorm, SchmidtNorm, RotationNorm
+
+# abstract type SHT end
+
+# struct SHGauss <: SHT; end
+# struct SHAuto <: SHT; end
+# struct SHRegFast <: SHT; end
+# struct SHRegDct <: SHT; end
+# struct SHQuickInit <: SHT; end
+# struct SHRegPoles <: SHT; end
+# struct SHGaussFly <: SHT; end
+
+# SHGauss() = sht_gauss
+# SHAuto() = sht_auto
+# SHRegFast() = sht_reg_fast
+# SHRegDct() = sht_reg_dct
+# SHQuickInit() = sht_quick_init
+# SHRegPoles() = sht_reg_poles
+# SHGaussFly() = sht_gauss_fly
+
+# export SHT, SHGauss, SHAuto, SHRegFast, SHRegDct, SHQuickInit, SHRegPoles, SHGaussFly
+
+
 
 const SHTNS_INTERFACE = 0x00030500
 
@@ -132,10 +180,13 @@ foreach(names(@__MODULE__, all=true)) do s
     end
  end
  
- #sht macros
+#sht macros
 #  LM(shtns, l,m)  = unsafe_load(shtns.lmidx,Cint(m/shtns.mres)) + l + 1
 export LM
 # LM(shtns, l,m)  = ( (((((unsigned short)(m))/shtns->mres)*(2*shtns->lmax + 2 - ((m)+shtns->mres)))>>1) + (l) )
-LM(shtns, l,m)  = (Cint(m/shtns.mres)*(2*shtns.lmax + 2 - (m+shtns.mres)))>>1 + l + 1
+function LM(shtns, l,m)  
+    @assert 0<=m<=l
+    return (Cint(m/shtns.mres)*(2*shtns.lmax + 2 - (m+shtns.mres)))>>1 + l + 1
+end
 
 end # module
