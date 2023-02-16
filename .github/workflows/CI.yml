@@ -18,13 +18,12 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.7'
+          - '1.8'
         os:
           - ubuntu-latest
           - macOS-latest
           - windows-latest
         arch:
-          - x64
           - x86
     steps:
       - uses: actions/checkout@v2
