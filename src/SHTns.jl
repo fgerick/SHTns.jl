@@ -194,4 +194,13 @@ end
 
 export LM, LM_cplx
 
+function grid(sht::SHTnsConfig)
+    cosθ = sht.ct
+    lat = asin.(cosθ)
+    lon = (2π/sht.nphi)*(0:(sht.nphi-1))
+    return lat, lon
+end
+
+export grid
+
 end # module
