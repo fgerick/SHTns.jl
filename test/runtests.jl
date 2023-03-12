@@ -6,16 +6,16 @@ using Test
     lmax = 5
     mmax = 3
     mres = 1
-    nphi = 10
+    nphi = 16
     nlat = 32
-    shtype = sht_gauss
+    shtype = SHTns.Gauss()
 
 
-    shtns_use_threads(0)
+    shtns_use_threads(1)
     shtns_verbose(1)
 
     # sht1 = shtns_init(flags,lmax, mmax, mres, nlat, nphi)
-    sht = SHTnsConfig(shtype, lmax, mmax, mres, nlat, nphi)
+    sht = SHTnsCfg(shtype, lmax, mmax, mres, nlat, nphi)
 
     # sht=unsafe_load(sht1)
 
@@ -45,7 +45,7 @@ using Test
 
     @test t[1]≈Sh[round(Int,nlat/3)]≈0.826862474446353
 
-    shtns_destroy(sht.cfg)
+    # shtns_destroy(sht.cfg)
 end
 
 @testset "SHT norms" begin
@@ -53,17 +53,17 @@ end
     lmax = 5
     mmax = 3
     mres = 1
-    nphi = 10
+    nphi = 16
     nlat = 32
-    shtype = sht_gauss
+    shtype = SHTns.Gauss()
 
 
     shtns_use_threads(0)
     shtns_verbose(1)
 
     # sht1 = shtns_init(flags,lmax, mmax, mres, nlat, nphi)
-    norms = [sht_orthonormal, sht_fourpi, sht_schmidt] 
-    shts = [SHTnsConfig(shtype, lmax, mmax, mres, nlat, nphi, norm) for norm in norms]
+    norms = [SHTns.Orthonormal(), SHTns.FourPi(), SHTns.Schmidt()] #sht_orthonormal, sht_fourpi, sht_schmidt]
+    shts = [SHTnsCfg(shtype, lmax, mmax, mres, nlat, nphi, norm) for norm in norms]
 
     # sht=unsafe_load(sht1)
     for l in 1:lmax
@@ -83,8 +83,8 @@ end
         @test all(isapprox(first(Shs)),Shs)
     end
 
-    for sht in shts
-        shtns_destroy(sht.cfg)
-    end
+    # for sht in shts
+    #     shtns_destroy(sht.cfg)
+    # end
     
 end

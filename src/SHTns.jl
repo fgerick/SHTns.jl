@@ -3,6 +3,8 @@ module SHTns
 using SHTns_jll
 export SHTns_jll
 
+import Base: convert, show, propertynames, getproperty
+
 const libshtns = SHTns_jll.LibSHTns
 
 using CEnum
@@ -41,68 +43,99 @@ struct shtns_info
     nlm_cplx::Cuint
 end
 
+abstract type SHTnsNorm end
+
+
+for (type, enumtype) in [(:Orthonormal, :sht_orthonormal), (:FourPi, :sht_fourpi), (:Schmidt, :sht_schmidt), (:ForRotations, :sht_for_rotations)]
+    @eval begin
+        struct $(type)<:SHTnsNorm; end
+        Base.convert(::Type{shtns_norm}, x::$(type)) = $(enumtype)
+    end
+end
+
+abstract type SHTnsType end
+
+for (type, enumtype) in [(:Gauss, :sht_gauss), (:RegFast, :sht_reg_fast), (:RegDCT, :sht_reg_dct), (:QuickInit, :sht_quick_init), (:RegPoles, :sht_reg_poles), (:GaussFly, :sht_gauss_fly) ] #(:Auto, :sht_auto), 
+    @eval begin
+        struct $(type)<:SHTnsType; end
+        Base.convert(::Type{shtns_type}, x::$(type)) = $(enumtype)
+    end
+end
+
+function _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
+    @assert lmax > 1 
+    @assert nphi > 2lmax 
+    @assert mmax*mres <= lmax
+    @assert mres > 0 
+    @assert nlat >= 32 #shtns wants nlat > 4*VSIZE2
+    if typeof(shtype) <: Union{Gauss, GaussFly, QuickInit} 
+        @assert nlat > lmax
+    else
+        @assert nlat > 2lmax
+    end
+end
+
+mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
+    cfg::Ptr{shtns_info}
+    norm::N
+    type::T
+    function SHTnsCfg(shtype::T, lmax, mmax, mres, nlat, nphi) where T<:SHTnsType
+        _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
+        cfg = shtns_init(shtype,lmax, mmax, mres, nlat, nphi)
+        stream = new{Orthonormal, T}(cfg)
+        finalizer(x->shtns_destroy(x.cfg), stream)
+        return stream
+    end
+    function SHTnsCfg(shtype::T,lmax, mmax, mres, nlat, nphi, norm::N; eps=1e-10) where {T<:SHTnsType, N<:SHTnsNorm}
+        _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
+        cfg = shtns_create(lmax, mmax, mres, norm)
+        shtns_set_grid(cfg, shtype, eps, nlat, nphi)
+        stream = new{N,T}(cfg)
+        finalizer(x->shtns_destroy(x.cfg), stream)
+        return stream
+    end
+ end
+
+SHTnsCfg(lmax, mmax, mres, nlat, nphi) = SHTnsCfg(Gauss(), lmax, mmax, mres, nlat, nphi) 
+
+ function Base.propertynames(::SHTnsCfg, private::Bool=false)
+    publicnames =   (:nlm, :lmax, :mmax, :mres, :nlat_2, :nlat, :nphi, 
+                    :nspat, :li, :mi, :ct, :st, :nlat_padded, :nlm_cplx, :norm, :type)
+    privatenames = (:cfg, )
+    if private
+        return (publicnames..., privatenames...)
+    else
+        return publicnames
+    end
+end
+
+function Base.getproperty(cfg::SHTnsCfg, p::Symbol)
+    if p ∈ (:nlm, :lmax, :mmax, :mres, :nlat_2, :nlat, :nphi, 
+        :nspat, :nlat_padded, :nlm_cplx) 
+        return Int(getproperty(unsafe_load(cfg.cfg),p))
+    elseif p ∈ (:li, :mi)
+        info = unsafe_load(cfg.cfg)
+        u = Vector{Int}(unsafe_wrap(Vector{Cushort},getproperty(info,p),Int(info.nlm)))
+        return u
+    elseif p ∈ (:ct, :st)
+        info = unsafe_load(cfg.cfg)
+        u = Vector{Float64}(unsafe_wrap(Vector{Cdouble},getproperty(info,p),Int(info.nlat)))
+        return u
+    elseif p ∈ (:norm, :type)
+        return getfield(cfg, p)
+    else
+        return getfield(cfg, p)
+    end
+end
+
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, cfg::SHTnsCfg)
+    summary(io, cfg); println(io)
+end
+
+
 const shtns_cfg = Ptr{shtns_info}
 
-struct SHTnsConfig
-    cfg::shtns_cfg
-    nlm::Int
-    lmax::Int
-    mmax::Int
-    mres::Int
-    nlat_2::Int
-    nlat::Int
-    nphi::Int
-    nspat::Int
-    li::Vector{Int}
-    mi::Vector{Int}
-    ct::Vector{Float64}
-    st::Vector{Float64}
-    nlat_padded::Int
-    nlm_cplx::Int
-end
-
-function SHTnsConfig(cfg::shtns_cfg) 
-    info = unsafe_load(cfg)
-    li = Vector{Int}(unsafe_wrap(Vector{Cushort},info.li,Int(info.nlm)))
-    mi = Vector{Int}(unsafe_wrap(Vector{Cushort},info.mi,Int(info.nlm)))
-    ct = unsafe_wrap(Vector{Float64},info.ct,Int(info.nlat))
-    st = unsafe_wrap(Vector{Float64},info.st,Int(info.nlat))
-
-    SHTnsConfig(cfg,
-            Int(info.nlm),
-            Int(info.lmax),
-            Int(info.mmax),
-            Int(info.mres),
-            Int(info.nlat_2),
-            Int(info.nlat),
-            Int(info.nphi),
-            Int(info.nspat),
-            li,
-            mi,
-            ct,
-            st,
-            Int(info.nlat_padded),
-            Int(info.nlm_cplx)
-    )
-end
-
-
-function SHTnsConfig(shtype::shtns_type,lmax, mmax, mres, nlat, nphi) 
-    return SHTnsConfig(shtns_init(shtype,lmax, mmax, mres, nlat, nphi))
-end
-
-function SHTnsConfig(shtype::shtns_type,lmax, mmax, mres, nlat, nphi, norm::shtns_norm; eps::Float64=1e-10) 
-    cfg = shtns_create(lmax, mmax, mres, norm)
-    shtns_set_grid(cfg, shtype, eps, nlat, nphi)
-    return SHTnsConfig(cfg)
-end
-
-function SHTnsConfig(lmax, mmax, mres, norm::shtns_norm)
-    cfg = shtns_create(lmax, mmax, mres, norm)
-    SHTnsConfig(cfg)
-end
-
-export SHTnsConfig
+export SHTnsCfg
 
 const cplx = ComplexF64
 
@@ -194,7 +227,7 @@ end
 
 export LM, LM_cplx
 
-function grid(sht::SHTnsConfig)
+function grid(sht::SHTnsCfg)
     cosθ = sht.ct
     lat = asin.(cosθ)
     lon = (2π/sht.nphi)*(0:(sht.nphi-1))
