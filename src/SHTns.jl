@@ -130,6 +130,8 @@ end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, cfg::SHTnsCfg)
     summary(io, cfg); println(io)
+    # show(io, mime, cfg.lmax)
+    println(io, "lmax: ", cfg.lmax, ", mmax: ", cfg.mmax, ", mres: ", cfg.mres, ", nlat: ", cfg.nlat, ", nphi: ", cfg.nphi)
 end
 
 
@@ -217,7 +219,6 @@ foreach(names(@__MODULE__, all=true)) do s
 #  LM(shtns, l,m)  = unsafe_load(shtns.lmidx,Cint(m/shtns.mres)) + l + 1
 # LM(shtns, l,m)  = ( (((((unsigned short)(m))/shtns->mres)*(2*shtns->lmax + 2 - ((m)+shtns->mres)))>>1) + (l) )
 function LM(shtns, l,m)  
-    @assert 0<=m<=l
     return (Cint(m/shtns.mres)*(2*shtns.lmax + 2 - (m+shtns.mres)))>>1 + l + 1
 end
 
@@ -235,5 +236,7 @@ function grid(sht::SHTnsCfg)
 end
 
 export grid
+
+# include("lmarray.jl")
 
 end # module
