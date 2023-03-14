@@ -215,28 +215,9 @@ foreach(names(@__MODULE__, all=true)) do s
     end
  end
  
-#sht macros
-#  LM(shtns, l,m)  = unsafe_load(shtns.lmidx,Cint(m/shtns.mres)) + l + 1
-# LM(shtns, l,m)  = ( (((((unsigned short)(m))/shtns->mres)*(2*shtns->lmax + 2 - ((m)+shtns->mres)))>>1) + (l) )
-function LM(shtns, l,m)  
-    return (Cint(m/shtns.mres)*(2*shtns.lmax + 2 - (m+shtns.mres)))>>1 + l + 1
-end
-
-function LM_cplx(shtns, l, m)
-    return (l <= shtns.mmax) ? l*(l+1)+m+1 : shtns.mmax*(2l - shtns.mmax) + l+m+1
-end
-
-export LM, LM_cplx
-
-function grid(sht::SHTnsCfg)
-    cosθ = sht.ct
-    lat = asin.(cosθ)
-    lon = (2π/sht.nphi)*(0:(sht.nphi-1))
-    return lat, lon
-end
-
-export grid
-
+include("tools.jl")
+include("synth.jl")
+include("analys.jl")
 # include("lmarray.jl")
 
 end # module
