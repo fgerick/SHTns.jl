@@ -1,6 +1,12 @@
 using SHTns
 using Test
 
+@testset "init threads" begin
+
+    @test shtns_use_threads(4) == 4
+    @test shtns_use_threads(1) == 1
+end
+
 @testset "SHT_example.c" begin
 
     lmax = 5
@@ -11,10 +17,10 @@ using Test
     shtype = SHTns.QuickInit()
 
 
-    shtns_use_threads(16)
+    shtns_use_threads(1)
     shtns_verbose(1)
 
-    sht = SHTnsCfg(shtype, lmax, mmax, mres, nlat, nphi)
+    sht = SHTnsCfg(lmax, mmax, mres, nlat, nphi; shtype)
 
 
     Slm = zeros(ComplexF64,sht.nlm)
@@ -59,7 +65,7 @@ end
     shtns_verbose(1)
 
     norms = [SHTns.Orthonormal(), SHTns.FourPi(), SHTns.Schmidt()] #sht_orthonormal, sht_fourpi, sht_schmidt]
-    shts = [SHTnsCfg(shtype, lmax, mmax, mres, nlat, nphi, norm) for norm in norms]
+    shts = [SHTnsCfg(lmax, mmax, mres, nlat, nphi; shtype, norm) for norm in norms]
 
     
     Slms = [zeros(ComplexF64,sht.nlm) for sht in shts]

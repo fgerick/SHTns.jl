@@ -49,7 +49,7 @@ function shtns_set_grid(cfg, flags, eps, nlat, nphi)
 end
 
 function shtns_set_grid_auto(cfg, flags, eps, nl_order, nlat, nphi)
-    ccall((:shtns_set_grid_auto, libshtns), Cint, (shtns_cfg, shtns_type, Cdouble, Cint, Ptr{Cint}, Ptr{Cint}), cfg, flags, eps, nl_order, nlat, nphi)
+    ccall((:shtns_set_grid_auto, libshtns), Cint, (shtns_cfg, shtns_type, Cdouble, Cint, Ptr{Cuint}, Ptr{Cuint}), cfg, flags, eps, nl_order, nlat, nphi)
 end
 
 function shtns_create_with_grid(cfg, mmax, nofft)

@@ -10,20 +10,20 @@ const libshtns = SHTns_jll.LibSHTns
 
 const shtns_norm = UInt32
 
-sht_orthonormal::shtns_norm = 0
-sht_fourpi::shtns_norm = 1
-sht_schmidt::shtns_norm = 2
-sht_for_rotations::shtns_norm = 3
+const sht_orthonormal::shtns_norm = 0
+const sht_fourpi::shtns_norm = 1
+const sht_schmidt::shtns_norm = 2
+const sht_for_rotations::shtns_norm = 3
 
 
 const shtns_type = UInt32
-sht_gauss::shtns_type = 0
-sht_auto::shtns_type = 1
-sht_reg_fast::shtns_type = 2
-sht_reg_dct::shtns_type = 3
-sht_quick_init::shtns_type = 4
-sht_reg_poles::shtns_type = 5
-sht_gauss_fly::shtns_type = 6
+const sht_gauss::shtns_type = 0
+const sht_auto::shtns_type = 1
+const sht_reg_fast::shtns_type = 2
+const sht_reg_dct::shtns_type = 3
+const sht_quick_init::shtns_type = 4
+const sht_reg_poles::shtns_type = 5
+const sht_gauss_fly::shtns_type = 6
 
 struct shtns_info
     nlm::Cuint
@@ -47,8 +47,16 @@ abstract type SHTnsNorm end
 
 for (type, enumtype) in [(:Orthonormal, :sht_orthonormal), (:FourPi, :sht_fourpi), (:Schmidt, :sht_schmidt), (:ForRotations, :sht_for_rotations)]
     @eval begin
-        struct $(type)<:SHTnsNorm; end
-        Base.convert(::Type{shtns_norm}, x::$(type)) = $(enumtype)
+
+        Base.@kwdef struct $(type)<:SHTnsNorm 
+            cs_phase::Bool=true
+        end
+
+        function Base.convert(::Type{shtns_norm}, x::$(type))
+            norm = $(enumtype)
+            !x.cs_phase && (norm += SHT_NO_CS_PHASE)
+            return norm
+        end
     end
 end
 
@@ -56,8 +64,20 @@ abstract type SHTnsType end
 
 for (type, enumtype) in [(:Gauss, :sht_gauss), (:RegFast, :sht_reg_fast), (:RegDCT, :sht_reg_dct), (:QuickInit, :sht_quick_init), (:RegPoles, :sht_reg_poles), (:GaussFly, :sht_gauss_fly) ] #(:Auto, :sht_auto), 
     @eval begin
-        struct $(type)<:SHTnsType; end
-        Base.convert(::Type{shtns_type}, x::$(type)) = $(enumtype)
+
+        Base.@kwdef struct $(type)<:SHTnsType
+            contiguous_lat::Bool=false
+            contiguous_phi::Bool=false
+            padding::Bool=false
+        end
+
+        function Base.convert(::Type{shtns_type}, x::$(type)) 
+            shtype = $(enumtype) 
+            x.contiguous_lat && (shtype += SHT_THETA_CONTIGUOUS)
+            x.contiguous_phi && (shtype += SHT_PHI_CONTIGUOUS) 
+            x.padding && (shtype += SHT_ALLOW_PADDING)
+            return shtype
+        end
     end
 end
 
@@ -78,31 +98,50 @@ mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
     cfg::Ptr{shtns_info}
     norm::N
     type::T
-    csphase::Bool
+    robert_form::Bool
+    function SHTnsCfg(lmax, mmax, mres, nlat, nphi; 
+                        shtype::T=QuickInit(), 
+                        norm::N=Orthonormal(), 
+                        eps=1e-10, 
+                        robert_form=false,
+                        ) where {T<:SHTnsType, N<:SHTnsNorm}
 
-    function SHTnsCfg(shtype::T, lmax, mmax, mres, nlat, nphi) where T<:SHTnsType
-        _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
-        cfg = shtns_init(shtype,lmax, mmax, mres, nlat, nphi)
-        stream = new{Orthonormal, T}(cfg, Orthonormal(), shtype, true)
-        finalizer(x->shtns_destroy(x.cfg), stream)
-        return stream
-    end
-    function SHTnsCfg(shtype::T,lmax, mmax, mres, nlat, nphi, norm::N; eps=1e-10, csphase=true) where {T<:SHTnsType, N<:SHTnsNorm}
-        norm = csphase ? norm : convert(shtns_norm,norm) + SHT_NO_CS_PHASE
         _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
         cfg = shtns_create(lmax, mmax, mres, norm)
+        robert_form && shtns_robert_form(cfg,1)
+
         shtns_set_grid(cfg, shtype, eps, nlat, nphi)
-        stream = new{N,T}(cfg, norm, shtype, csphase)
+        stream = new{N,T}(cfg, norm, shtype, robert_form)
         finalizer(x->shtns_destroy(x.cfg), stream)
         return stream
     end
+    function SHTnsCfg(lmax, mmax=lmax, mres=1; 
+        shtype::T=QuickInit(), 
+        norm::N=Orthonormal(), 
+        eps=1e-10, 
+        robert_form=false,
+        nl_order = 0,
+        ) where {T<:SHTnsType, N<:SHTnsNorm}
+
+        @assert lmax > 1 
+        @assert mmax*mres <= lmax
+        @assert mres > 0 
+
+        cfg = shtns_create(lmax, mmax, mres, norm)
+        robert_form && shtns_robert_form(cfg,1)
+        info = unsafe_load(cfg)
+        shtns_set_grid_auto(cfg, shtype, eps, nl_order, Ref(info.nlat), Ref(info.nphi))
+        stream = new{N,T}(cfg, norm, shtype, robert_form)
+        finalizer(x->shtns_destroy(x.cfg), stream)
+        return stream
+    end
+
  end
 
-SHTnsCfg(lmax, mmax, mres, nlat, nphi) = SHTnsCfg(QuickInit(), lmax, mmax, mres, nlat, nphi) 
 
  function Base.propertynames(::SHTnsCfg, private::Bool=false)
     publicnames =   (:nlm, :lmax, :mmax, :mres, :nlat_2, :nlat, :nphi, 
-                    :nspat, :li, :mi, :ct, :st, :nlat_padded, :nlm_cplx, :norm, :type)
+                    :nspat, :li, :mi, :ct, :st, :nlat_padded, :nlm_cplx, :norm, :type, :csphase, :robert_form)
     privatenames = (:cfg, )
     if private
         return (publicnames..., privatenames...)
@@ -148,17 +187,17 @@ mutable struct shtns_rot_ end
 
 const shtns_rot = Ptr{shtns_rot_}
 
-const SHTNS_INTERFACE = 0x00030500
-const SHT_NO_CS_PHASE = 256 * 4
-const SHT_REAL_NORM = 256 * 8
-const SHT_NATIVE_LAYOUT = 0
-const SHT_THETA_CONTIGUOUS = 256
-const SHT_PHI_CONTIGUOUS = 256 * 2
-const SHT_SOUTH_POLE_FIRST = 256 * 32
-const SHT_SCALAR_ONLY = 256 * 16
-const SHT_LOAD_SAVE_CFG = 256 * 64
-const SHT_ALLOW_GPU = 256 * 128
-const SHT_ALLOW_PADDING = 256 * 256
+const SHTNS_INTERFACE::UInt32 = 0x00030500
+const SHT_NO_CS_PHASE::UInt32 = 256 * 4
+const SHT_REAL_NORM::UInt32 = 256 * 8
+const SHT_NATIVE_LAYOUT::UInt32 = 0
+const SHT_THETA_CONTIGUOUS::UInt32 = 256
+const SHT_PHI_CONTIGUOUS::UInt32 = 256 * 2
+const SHT_SOUTH_POLE_FIRST::UInt32 = 256 * 32
+const SHT_SCALAR_ONLY::UInt32 = 256 * 16
+const SHT_LOAD_SAVE_CFG::UInt32 = 256 * 64
+const SHT_ALLOW_GPU::UInt32 = 256 * 128
+const SHT_ALLOW_PADDING::UInt32 = 256 * 256
 
 include("sht.jl")
 include("tools.jl")
