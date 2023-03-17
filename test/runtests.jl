@@ -64,7 +64,7 @@ end
     # shtns_use_threads(0)
     shtns_verbose(1)
 
-    norms = [SHTns.Orthonormal(), SHTns.FourPi(), SHTns.Schmidt()] #sht_orthonormal, sht_fourpi, sht_schmidt]
+    norms = [SHTns.Orthonormal(), SHTns.FourPi(), SHTns.Schmidt()]
     shts = [SHTnsCfg(lmax, mmax, mres, nlat, nphi; shtype, norm) for norm in norms]
 
     

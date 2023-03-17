@@ -1,15 +1,14 @@
 using Documenter, SHTns
 
 makedocs(;
-    modules=[SHTns],
-    format=Documenter.HTML(),
+    # modules=[SHTns],
+    # format=Documenter.HTML(),
     pages=[
         "Home" => "index.md",
+        "API" => "api.md",
     ],
     repo="https://github.com/fgerick/SHTns.jl/blob/{commit}{path}#L{line}",
     sitename="SHTns.jl",
-    authors="Felix Gerick",
-    assets=String[],
 )
 
 deploydocs(;

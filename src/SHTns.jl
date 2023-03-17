@@ -47,7 +47,10 @@ abstract type SHTnsNorm end
 
 for (type, enumtype) in [(:Orthonormal, :sht_orthonormal), (:FourPi, :sht_fourpi), (:Schmidt, :sht_schmidt), (:ForRotations, :sht_for_rotations)]
     @eval begin
-
+        """
+            struct $($(type)) <: SHTnsNorm
+        
+        """
         Base.@kwdef struct $(type)<:SHTnsNorm 
             cs_phase::Bool=true
         end
@@ -64,7 +67,10 @@ abstract type SHTnsType end
 
 for (type, enumtype) in [(:Gauss, :sht_gauss), (:RegFast, :sht_reg_fast), (:RegDCT, :sht_reg_dct), (:QuickInit, :sht_quick_init), (:RegPoles, :sht_reg_poles), (:GaussFly, :sht_gauss_fly) ] #(:Auto, :sht_auto), 
     @eval begin
-
+        """
+            struct $($(type)) <: SHTnsType
+        
+        """
         Base.@kwdef struct $(type)<:SHTnsType
             contiguous_lat::Bool=false
             contiguous_phi::Bool=false
@@ -94,10 +100,15 @@ function _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
     end
 end
 
+"""
+    mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
+
+Configuration of spherical harmonic transform.
+"""
 mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
     cfg::Ptr{shtns_info}
     norm::N
-    type::T
+    shtype::T
     robert_form::Bool
     function SHTnsCfg(lmax, mmax, mres, nlat, nphi; 
                         shtype::T=QuickInit(), 
