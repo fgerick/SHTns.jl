@@ -187,17 +187,17 @@ mutable struct shtns_rot_ end
 
 const shtns_rot = Ptr{shtns_rot_}
 
-const SHTNS_INTERFACE::UInt32 = 0x00030500
-const SHT_NO_CS_PHASE::UInt32 = 256 * 4
-const SHT_REAL_NORM::UInt32 = 256 * 8
-const SHT_NATIVE_LAYOUT::UInt32 = 0
-const SHT_THETA_CONTIGUOUS::UInt32 = 256
-const SHT_PHI_CONTIGUOUS::UInt32 = 256 * 2
-const SHT_SOUTH_POLE_FIRST::UInt32 = 256 * 32
-const SHT_SCALAR_ONLY::UInt32 = 256 * 16
-const SHT_LOAD_SAVE_CFG::UInt32 = 256 * 64
-const SHT_ALLOW_GPU::UInt32 = 256 * 128
-const SHT_ALLOW_PADDING::UInt32 = 256 * 256
+const SHTNS_INTERFACE = UInt32(0x00030500)
+const SHT_NO_CS_PHASE = UInt32(256 * 4)
+const SHT_REAL_NORM = UInt32(256 * 8)
+const SHT_NATIVE_LAYOUT = UInt32(0)
+const SHT_THETA_CONTIGUOUS = UInt32(256)
+const SHT_PHI_CONTIGUOUS = UInt32(256 * 2)
+const SHT_SOUTH_POLE_FIRST = UInt32(256 * 32)
+const SHT_SCALAR_ONLY = UInt32(256 * 16)
+const SHT_LOAD_SAVE_CFG = UInt32(256 * 64)
+const SHT_ALLOW_GPU = UInt32(256 * 128)
+const SHT_ALLOW_PADDING = UInt32(256 * 256)
 
 include("sht.jl")
 include("tools.jl")
