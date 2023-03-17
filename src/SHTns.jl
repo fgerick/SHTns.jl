@@ -10,20 +10,20 @@ const libshtns = SHTns_jll.LibSHTns
 
 const shtns_norm = UInt32
 
-const sht_orthonormal::shtns_norm = 0
-const sht_fourpi::shtns_norm = 1
-const sht_schmidt::shtns_norm = 2
-const sht_for_rotations::shtns_norm = 3
+const sht_orthonormal = shtns_norm(0)
+const sht_fourpi = shtns_norm(1)
+const sht_schmidt = shtns_norm(2)
+const sht_for_rotations = shtns_norm(3)
 
 
 const shtns_type = UInt32
-const sht_gauss::shtns_type = 0
-const sht_auto::shtns_type = 1
-const sht_reg_fast::shtns_type = 2
-const sht_reg_dct::shtns_type = 3
-const sht_quick_init::shtns_type = 4
-const sht_reg_poles::shtns_type = 5
-const sht_gauss_fly::shtns_type = 6
+const sht_gauss = shtns_type(0)
+const sht_auto = shtns_type(1)
+const sht_reg_fast = shtns_type(2)
+const sht_reg_dct = shtns_type(3)
+const sht_quick_init = shtns_type(4)
+const sht_reg_poles = shtns_type(5)
+const sht_gauss_fly = shtns_type(6)
 
 struct shtns_info
     nlm::Cuint
