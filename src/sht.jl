@@ -1,4 +1,4 @@
-
+#direct bindings to SHTns generated with Clang.jl
 
 function SHsph_to_spat(cfg, Slm, Vt, Vp)
     ccall((:SHsph_to_spat, libshtns), Cvoid, (shtns_cfg, Ptr{cplx}, Ptr{Cdouble}, Ptr{Cdouble}), cfg, Slm, Vt, Vp)

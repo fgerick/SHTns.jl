@@ -132,7 +132,6 @@ end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, cfg::SHTnsCfg)
     summary(io, cfg); println(io)
-    # show(io, mime, cfg.lmax)
     println(io, "lmax: ", cfg.lmax, ", mmax: ", cfg.mmax, ", mres: ", cfg.mres, ", nlat: ", cfg.nlat, ", nphi: ", cfg.nphi)
 end
 
