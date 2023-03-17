@@ -8,10 +8,10 @@ using Test
     mres = 1
     nphi = 16
     nlat = 32
-    shtype = SHTns.Gauss()
+    shtype = SHTns.QuickInit()
 
 
-    shtns_use_threads(1)
+    shtns_use_threads(16)
     shtns_verbose(1)
 
     sht = SHTnsCfg(shtype, lmax, mmax, mres, nlat, nphi)
@@ -52,10 +52,10 @@ end
     mres = 1
     nphi = 16
     nlat = 32
-    shtype = SHTns.Gauss()
+    shtype = SHTns.QuickInit()
 
 
-    shtns_use_threads(0)
+    # shtns_use_threads(0)
     shtns_verbose(1)
 
     norms = [SHTns.Orthonormal(), SHTns.FourPi(), SHTns.Schmidt()] #sht_orthonormal, sht_fourpi, sht_schmidt]

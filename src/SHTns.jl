@@ -7,24 +7,23 @@ import Base: convert, show, propertynames, getproperty
 
 const libshtns = SHTns_jll.LibSHTns
 
-using CEnum
 
-@cenum shtns_norm::UInt32 begin
-    sht_orthonormal = 0
-    sht_fourpi = 1
-    sht_schmidt = 2
-    sht_for_rotations = 3
-end
+const shtns_norm = UInt32
 
-@cenum shtns_type::UInt32 begin
-    sht_gauss = 0
-    sht_auto = 1
-    sht_reg_fast = 2
-    sht_reg_dct = 3
-    sht_quick_init = 4
-    sht_reg_poles = 5
-    sht_gauss_fly = 6
-end
+sht_orthonormal::shtns_norm = 0
+sht_fourpi::shtns_norm = 1
+sht_schmidt::shtns_norm = 2
+sht_for_rotations::shtns_norm = 3
+
+
+const shtns_type = UInt32
+sht_gauss::shtns_type = 0
+sht_auto::shtns_type = 1
+sht_reg_fast::shtns_type = 2
+sht_reg_dct::shtns_type = 3
+sht_quick_init::shtns_type = 4
+sht_reg_poles::shtns_type = 5
+sht_gauss_fly::shtns_type = 6
 
 struct shtns_info
     nlm::Cuint
@@ -79,24 +78,27 @@ mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
     cfg::Ptr{shtns_info}
     norm::N
     type::T
+    csphase::Bool
+
     function SHTnsCfg(shtype::T, lmax, mmax, mres, nlat, nphi) where T<:SHTnsType
         _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
         cfg = shtns_init(shtype,lmax, mmax, mres, nlat, nphi)
-        stream = new{Orthonormal, T}(cfg)
+        stream = new{Orthonormal, T}(cfg, Orthonormal(), shtype, true)
         finalizer(x->shtns_destroy(x.cfg), stream)
         return stream
     end
-    function SHTnsCfg(shtype::T,lmax, mmax, mres, nlat, nphi, norm::N; eps=1e-10) where {T<:SHTnsType, N<:SHTnsNorm}
+    function SHTnsCfg(shtype::T,lmax, mmax, mres, nlat, nphi, norm::N; eps=1e-10, csphase=true) where {T<:SHTnsType, N<:SHTnsNorm}
+        norm = csphase ? norm : convert(shtns_norm,norm) + SHT_NO_CS_PHASE
         _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
         cfg = shtns_create(lmax, mmax, mres, norm)
         shtns_set_grid(cfg, shtype, eps, nlat, nphi)
-        stream = new{N,T}(cfg)
+        stream = new{N,T}(cfg, norm, shtype, csphase)
         finalizer(x->shtns_destroy(x.cfg), stream)
         return stream
     end
  end
 
-SHTnsCfg(lmax, mmax, mres, nlat, nphi) = SHTnsCfg(Gauss(), lmax, mmax, mres, nlat, nphi) 
+SHTnsCfg(lmax, mmax, mres, nlat, nphi) = SHTnsCfg(QuickInit(), lmax, mmax, mres, nlat, nphi) 
 
  function Base.propertynames(::SHTnsCfg, private::Bool=false)
     publicnames =   (:nlm, :lmax, :mmax, :mres, :nlat_2, :nlat, :nphi, 
@@ -147,66 +149,23 @@ mutable struct shtns_rot_ end
 
 const shtns_rot = Ptr{shtns_rot_}
 
-
-# abstract type SHNorm end
-
-# struct OrthonormalNorm <: SHNorm; end
-# struct FourPiNorm <: SHNorm; end
-# struct SchmidtNorm <: SHNorm; end
-# struct RotationNorm <: SHNorm; end
-
-# OrthonormalNorm() = sht_orthonormal
-# FourPiNorm() = sht_fourpi
-# SchmidtNorm() = sht_schmidt
-# RotationNorm() = sht_for_rotations
-
-# export SHNorm, OrthonormalNorm, FourPiNorm, SchmidtNorm, RotationNorm
-
-# abstract type SHT end
-
-# struct SHGauss <: SHT; end
-# struct SHAuto <: SHT; end
-# struct SHRegFast <: SHT; end
-# struct SHRegDct <: SHT; end
-# struct SHQuickInit <: SHT; end
-# struct SHRegPoles <: SHT; end
-# struct SHGaussFly <: SHT; end
-
-# SHGauss() = sht_gauss
-# SHAuto() = sht_auto
-# SHRegFast() = sht_reg_fast
-# SHRegDct() = sht_reg_dct
-# SHQuickInit() = sht_quick_init
-# SHRegPoles() = sht_reg_poles
-# SHGaussFly() = sht_gauss_fly
-
-# export SHT, SHGauss, SHAuto, SHRegFast, SHRegDct, SHQuickInit, SHRegPoles, SHGaussFly
-
-
-
 const SHTNS_INTERFACE = 0x00030500
-
 const SHT_NO_CS_PHASE = 256 * 4
-
 const SHT_REAL_NORM = 256 * 8
-
 const SHT_NATIVE_LAYOUT = 0
-
 const SHT_THETA_CONTIGUOUS = 256
-
 const SHT_PHI_CONTIGUOUS = 256 * 2
-
 const SHT_SOUTH_POLE_FIRST = 256 * 32
-
 const SHT_SCALAR_ONLY = 256 * 16
-
 const SHT_LOAD_SAVE_CFG = 256 * 64
-
 const SHT_ALLOW_GPU = 256 * 128
-
 const SHT_ALLOW_PADDING = 256 * 256
 
 include("sht.jl")
+include("tools.jl")
+include("synth.jl")
+include("analys.jl")
+
 
 #export most functions
 foreach(names(@__MODULE__, all=true)) do s
@@ -215,9 +174,4 @@ foreach(names(@__MODULE__, all=true)) do s
     end
  end
  
-include("tools.jl")
-include("synth.jl")
-include("analys.jl")
-# include("lmarray.jl")
-
 end # module
