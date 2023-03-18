@@ -89,7 +89,7 @@ end
 
 function _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
     @assert lmax > 1 
-    @assert nphi > 2lmax 
+    # @assert nphi > 2lmax 
     @assert mmax*mres <= lmax
     @assert mres > 0 
     @assert nlat >= 32 #shtns wants nlat > 4*VSIZE2

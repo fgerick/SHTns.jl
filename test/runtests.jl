@@ -88,3 +88,5 @@ end
     @test all(isapprox(first(Shs)),Shs)
     
 end
+
+include("shtns_test_suite.jl")

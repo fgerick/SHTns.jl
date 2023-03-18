@@ -34,9 +34,13 @@ end
 
 Returns latitudes `lat::Vector{Float64}` and longitudes `lon::Vector{Float64}`.
 """
-function grid(cfg::SHTnsCfg)
+function grid(cfg::SHTnsCfg; colat=false)
     cosθ = cfg.ct
-    lat = asin.(cosθ)
+    if colat
+        lat = asin.(cosθ)
+    else
+        lat = acos.(cosθ)
+    end
     lon = (2π / cfg.nphi) * (0:(cfg.nphi-1))
     return lat, lon
 end

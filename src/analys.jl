@@ -1,14 +1,14 @@
 function analys(cfg::SHTnsCfg, v::Matrix{Float64})
     @assert cfg.nlat != 0
     qlm = Vector{ComplexF64}(undef, cfg.nlm)
-    analys!(cfg, v, qlm)
+    analys!(cfg, copy(v), qlm)
     return qlm
 end
 
 function analys(cfg::SHTnsCfg, v::Matrix{ComplexF64})
     @assert cfg.nlat != 0
     qlm = Vector{ComplexF64}(undef, cfg.nlm_cplx)
-    analys!(cfg, v, qlm)
+    analys!(cfg, copy(v), qlm)
     return qlm
 end
 
@@ -16,7 +16,7 @@ function analys(cfg::SHTnsCfg, utheta::Matrix{Float64}, uphi::Matrix{Float64})
     @assert cfg.nlat != 0
     slm = Vector{ComplexF64}(undef, cfg.nlm)
     tlm = Vector{ComplexF64}(undef, cfg.nlm)
-    analys!(cfg, utheta, uphi, slm, tlm)
+    analys!(cfg, copy(utheta), copy(uphi), slm, tlm)
     return slm, tlm
 end
 
@@ -24,7 +24,7 @@ function analys(cfg::SHTnsCfg, utheta::Matrix{ComplexF64}, uphi::Matrix{ComplexF
     @assert cfg.nlat != 0
     slm = Vector{ComplexF64}(undef, cfg.nlm_cplx)
     tlm = Vector{ComplexF64}(undef, cfg.nlm_cplx)
-    analys!(cfg, utheta, uphi, slm, tlm)
+    analys!(cfg, copy(utheta), copy(uphi), slm, tlm)
     return slm, tlm
 end
 
@@ -33,7 +33,7 @@ function analys(cfg::SHTnsCfg, ur::Matrix{Float64}, utheta::Matrix{Float64}, uph
     qlm = Vector{ComplexF64}(undef, cfg.nlm)
     slm = Vector{ComplexF64}(undef, cfg.nlm)
     tlm = Vector{ComplexF64}(undef, cfg.nlm)
-    analys!(cfg, ur, utheta, uphi, qlm, slm, tlm)
+    analys!(cfg, copy(ur), copy(utheta), copy(uphi), qlm, slm, tlm)
     return qlm, slm, tlm
 end
 
@@ -42,7 +42,7 @@ function analys(cfg::SHTnsCfg, ur::Matrix{ComplexF64}, utheta::Matrix{ComplexF64
     qlm = Vector{ComplexF64}(undef, cfg.nlm_cplx)
     slm = Vector{ComplexF64}(undef, cfg.nlm_cplx)
     tlm = Vector{ComplexF64}(undef, cfg.nlm_cplx)
-    analys!(cfg, ur, utheta, uphi, qlm, slm, tlm)
+    analys!(cfg, copy(ur), copy(utheta), copy(uphi), qlm, slm, tlm)
     return qlm, slm, tlm
 end
 
