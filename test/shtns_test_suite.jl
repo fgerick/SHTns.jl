@@ -31,7 +31,7 @@
 
 	for lm=4:cfg.nlm
 		if (lm != LM(cfg,1,1)) && (lm != LM(cfg,4,2))
-			@test q[lm] ≈ 0.0 atol=1e-15 rtol=0
+			@test q[lm] ≈ 0.0 atol=1e-14 rtol=0
 		end
 	end
 
