@@ -1,11 +1,19 @@
 module SHTns
 
+#to use system build SHTns library (needs to be a shared library)
+# e.g. using 
+# gcc -lfftw3 -lfftw3_omp -fopenmp -shared libshtns.so *.o 
+if get(ENV, "SHTNS_PATH", "false") != "false"
+    const libshtns = get(ENV, "SHTNS_PATH", "false")
+else
+    using SHTns_jll
+    const libshtns = SHTns_jll.LibSHTns
+end
+
 using SHTns_jll
 export SHTns_jll
 
 import Base: convert, show, propertynames, getproperty
-
-const libshtns = SHTns_jll.LibSHTns
 
 
 const shtns_norm = UInt32
