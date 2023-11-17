@@ -1,5 +1,6 @@
 using SHTns
 using Test
+using LinearAlgebra
 
 @testset "init threads" begin
 
@@ -89,4 +90,5 @@ end
     
 end
 
+include("tools_test.jl")
 include("shtns_test_suite.jl")

@@ -48,12 +48,12 @@ end
 """
     gauss_weights(cfg::SHTnsCfg)
 
-Returns Gauss quadrature weights of length `cfg.nlat_2` (`cfg.nlat ÷ 2`).
+Returns Gauss quadrature weights of length `cfg.nlat` (`shtns_gauss_wts` only returns half of the symmetric weights).
 """
 function gauss_weights(cfg::SHTnsCfg)
-    weights = zeros(cfg.nlat_2)
-    SHTns.shtns_gauss_wts(cfg.cfg,weights)
-    return weights
+    _weights = zeros(cfg.nlat_2)
+    SHTns.shtns_gauss_wts(cfg.cfg,_weights)
+    return vcat(_weights,reverse(_weights))
 end
 
 export LM, LM_cplx, grid, gauss_weights
