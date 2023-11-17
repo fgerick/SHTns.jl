@@ -45,4 +45,15 @@ function grid(cfg::SHTnsCfg; colat=false)
     return lat, lon
 end
 
-export LM, LM_cplx, grid
+"""
+    gauss_weights(cfg::SHTnsCfg)
+
+Returns Gauss quadrature weights of length `cfg.nlat_2` (`cfg.nlat ÷ 2`).
+"""
+function gauss_weights(cfg::SHTnsCfg)
+    weights = zeros(cfg.nlat_2)
+    SHTns.shtns_gauss_wts(cfg.cfg,weights)
+    return weights
+end
+
+export LM, LM_cplx, grid, gauss_weights
