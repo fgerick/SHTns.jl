@@ -69,3 +69,6 @@ end
 function analys!(cfg::SHTnsCfg, ur::T, utheta::T, uphi::T, qlm, slm, tlm) where {T<:AbstractMatrix{ComplexF64}}
     return spat_to_SHqst(cfg.cfg, ur, utheta, uphi, qlm, slm, tlm)
 end
+
+
+export analys, analys!

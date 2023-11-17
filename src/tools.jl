@@ -16,17 +16,17 @@ function LM_cplx(shtns, l, m)
     return (l <= shtns.mmax) ? l * (l + 1) + m + 1 : shtns.mmax * (2l - shtns.mmax) + l + m + 1
 end
 
-"""
-    k2lm(cfg, idx)
+# """
+#     k2lm(cfg, idx)
 
-Returns the `l` and `m` corresponding to the given index `idx` in complex spherical harmonic expansion.
-"""
-function k2lm(cfg, idx)
-    @assert 0 < idx < (cfg.lmax + 1)^2
-    l = round(Int, sqrt(idx))
-    m = idx - l * (l + 1)
-    return l, m
-end
+# Returns the `l` and `m` corresponding to the given index `idx` in complex spherical harmonic expansion.
+# """
+# function k2lm(cfg, idx)
+#     @assert 0 < idx < (cfg.lmax + 1)^2
+#     l = round(Int, sqrt(idx))
+#     m = idx - l * (l + 1)
+#     return l, m
+# end
 
 
 """

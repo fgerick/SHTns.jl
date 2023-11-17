@@ -136,3 +136,6 @@ function synth!(cfg::SHTnsCfg, qlm, slm, tlm, ur::T, utheta::T, uphi::T) where {
     SHqst_to_spat_cplx(cfg.cfg, qlm, slm, tlm, ur, utheta, uphi)
     return ur, utheta, uphi
 end
+
+
+export synth, synth_cplx, synth!

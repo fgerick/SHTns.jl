@@ -90,5 +90,6 @@ end
     
 end
 
+include("julia_interface.jl")
 include("tools_test.jl")
 include("shtns_test_suite.jl")

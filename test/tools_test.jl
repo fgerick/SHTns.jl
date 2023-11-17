@@ -1,5 +1,6 @@
 @testset "tools" begin
-	cfg = SHTnsCfg(10)
+	L = 10
+	cfg = SHTnsCfg(L)
 	theta, phi = grid(cfg)
 	weights = gauss_weights(cfg)
 	x = cos.(theta)
