@@ -1,11 +1,21 @@
 module SHTns
 
 using SHTns_jll
-export SHTns_jll
+#to use system build SHTns library (needs to be a shared library)
+# e.g. using 
+# gcc -lfftw3 -lfftw3_omp -fopenmp -shared libshtns.so *.o 
+const libshtns = Ref{String}()
+
+function __init__()
+    if haskey(ENV, "SHTNS_PATH")
+        libshtns[] = ENV["SHTNS_PATH"]
+    else
+        libshtns[] = SHTns_jll.LibSHTns
+    end
+end
+
 
 import Base: convert, show, propertynames, getproperty
-
-const libshtns = SHTns_jll.LibSHTns
 
 
 const shtns_norm = UInt32
@@ -89,10 +99,10 @@ end
 
 function _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
     @assert lmax > 1 
-    @assert nphi > 2lmax 
     @assert mmax*mres <= lmax
     @assert mres > 0 
-    @assert nlat >= 32 #shtns wants nlat > 4*VSIZE2
+    @assert nlat >= 16 # shtns wants nlat > 4*VSIZE2
+    @assert nphi > 2mmax # sampling theorem
     if typeof(shtype) <: Union{Gauss, GaussFly, QuickInit} 
         @assert nlat > lmax
     else
@@ -110,6 +120,20 @@ mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
     norm::N
     shtype::T
     robert_form::Bool
+    nlm::Int
+    lmax::Int
+    mmax::Int
+    mres::Int
+    nlat_2::Int
+    nlat::Int
+    nphi::Int
+    nspat::Int
+    li::Vector{Int}
+    mi::Vector{Int}
+    ct::Vector{Float64}
+    st::Vector{Float64}
+    nlat_padded::Int
+    nlm_cplx::Int
     function SHTnsCfg(lmax, mmax, mres, nlat, nphi; 
                         shtype::T=QuickInit(), 
                         norm::N=Orthonormal(), 
@@ -120,9 +144,13 @@ mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
         _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
         cfg = shtns_create(lmax, mmax, mres, norm)
         robert_form && shtns_robert_form(cfg,1)
-
         shtns_set_grid(cfg, shtype, eps, nlat, nphi)
-        stream = new{N,T}(cfg, norm, shtype, robert_form)
+        info = unsafe_load(cfg)
+        li = Vector{Int}(unsafe_wrap(Vector{Cushort},info.li,Int(info.nlm)))
+        mi = Vector{Int}(unsafe_wrap(Vector{Cushort},info.mi,Int(info.nlm)))
+        ct = Vector{Float64}(unsafe_wrap(Vector{Cdouble},info.ct,Int(info.nlat)))
+        st = Vector{Float64}(unsafe_wrap(Vector{Cdouble},info.st,Int(info.nlat)))
+        stream = new{N,T}(cfg, norm, shtype, robert_form, info.nlm, info.lmax, info.mmax, info.mres, info.nlat_2, info.nlat, info.nphi, info.nspat, li, mi, ct, st, info.nlat_padded, info.nlm_cplx)
         finalizer(x->shtns_destroy(x.cfg), stream)
         return stream
     end
@@ -142,7 +170,12 @@ mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
         robert_form && shtns_robert_form(cfg,1)
         info = unsafe_load(cfg)
         shtns_set_grid_auto(cfg, shtype, eps, nl_order, Ref(info.nlat), Ref(info.nphi))
-        stream = new{N,T}(cfg, norm, shtype, robert_form)
+        info = unsafe_load(cfg)
+        li = Vector{Int}(unsafe_wrap(Vector{Cushort},info.li,Int(info.nlm)))
+        mi = Vector{Int}(unsafe_wrap(Vector{Cushort},info.mi,Int(info.nlm)))
+        ct = Vector{Float64}(unsafe_wrap(Vector{Cdouble},info.ct,Int(info.nlat)))
+        st = Vector{Float64}(unsafe_wrap(Vector{Cdouble},info.st,Int(info.nlat)))
+        stream = new{N,T}(cfg, norm, shtype, robert_form, info.nlm, info.lmax, info.mmax, info.mres, info.nlat_2, info.nlat, info.nphi, info.nspat, li, mi, ct, st, info.nlat_padded, info.nlm_cplx)
         finalizer(x->shtns_destroy(x.cfg), stream)
         return stream
     end
@@ -150,35 +183,16 @@ mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
  end
 
 
- function Base.propertynames(::SHTnsCfg, private::Bool=false)
-    publicnames =   (:nlm, :lmax, :mmax, :mres, :nlat_2, :nlat, :nphi, 
-                    :nspat, :li, :mi, :ct, :st, :nlat_padded, :nlm_cplx, :norm, :type, :csphase, :robert_form)
-    privatenames = (:cfg, )
-    if private
-        return (publicnames..., privatenames...)
-    else
-        return publicnames
-    end
-end
-
-function Base.getproperty(cfg::SHTnsCfg, p::Symbol)
-    if p ∈ (:nlm, :lmax, :mmax, :mres, :nlat_2, :nlat, :nphi, 
-        :nspat, :nlat_padded, :nlm_cplx) 
-        return Int(getproperty(unsafe_load(cfg.cfg),p))
-    elseif p ∈ (:li, :mi)
-        info = unsafe_load(cfg.cfg)
-        u = Vector{Int}(unsafe_wrap(Vector{Cushort},getproperty(info,p),Int(info.nlm)))
-        return u
-    elseif p ∈ (:ct, :st)
-        info = unsafe_load(cfg.cfg)
-        u = Vector{Float64}(unsafe_wrap(Vector{Cdouble},getproperty(info,p),Int(info.nlat)))
-        return u
-    elseif p ∈ (:norm, :type)
-        return getfield(cfg, p)
-    else
-        return getfield(cfg, p)
-    end
-end
+#  function Base.propertynames(::SHTnsCfg, private::Bool=false)
+#     publicnames =   (:nlm, :lmax, :mmax, :mres, :nlat_2, :nlat, :nphi, 
+#                     :nspat, :li, :mi, :ct, :st, :nlat_padded, :nlm_cplx, :norm, :type, :robert_form)
+#     privatenames = (:cfg, )
+#     if private
+#         return (publicnames..., privatenames...)
+#     else
+#         return publicnames
+#     end
+# end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, cfg::SHTnsCfg)
     summary(io, cfg); println(io)
