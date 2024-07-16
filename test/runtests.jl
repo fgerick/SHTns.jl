@@ -1,5 +1,6 @@
 using SHTns
 using Test
+using LinearAlgebra
 
 @testset "init threads" begin
 
@@ -88,3 +89,7 @@ end
     @test all(isapprox(first(Shs)),Shs)
     
 end
+
+include("julia_interface.jl")
+include("tools_test.jl")
+include("shtns_test_suite.jl")

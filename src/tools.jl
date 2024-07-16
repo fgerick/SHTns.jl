@@ -16,17 +16,17 @@ function LM_cplx(shtns, l, m)
     return (l <= shtns.mmax) ? l * (l + 1) + m + 1 : shtns.mmax * (2l - shtns.mmax) + l + m + 1
 end
 
-"""
-    k2lm(cfg, idx)
+# """
+#     k2lm(cfg, idx)
 
-Returns the `l` and `m` corresponding to the given index `idx` in complex spherical harmonic expansion.
-"""
-function k2lm(cfg, idx)
-    @assert 0 < idx < (cfg.lmax + 1)^2
-    l = round(Int, sqrt(idx))
-    m = idx - l * (l + 1)
-    return l, m
-end
+# Returns the `l` and `m` corresponding to the given index `idx` in complex spherical harmonic expansion.
+# """
+# function k2lm(cfg, idx)
+#     @assert 0 < idx < (cfg.lmax + 1)^2
+#     l = round(Int, sqrt(idx))
+#     m = idx - l * (l + 1)
+#     return l, m
+# end
 
 
 """
@@ -34,11 +34,26 @@ end
 
 Returns latitudes `lat::Vector{Float64}` and longitudes `lon::Vector{Float64}`.
 """
-function grid(cfg::SHTnsCfg)
+function grid(cfg::SHTnsCfg; colat=false)
     cosθ = cfg.ct
-    lat = asin.(cosθ)
+    if colat
+        lat = asin.(cosθ)
+    else
+        lat = acos.(cosθ)
+    end
     lon = (2π / cfg.nphi) * (0:(cfg.nphi-1))
     return lat, lon
 end
 
-export LM, LM_cplx, grid
+"""
+    gauss_weights(cfg::SHTnsCfg)
+
+Returns Gauss quadrature weights of length `cfg.nlat` (`shtns_gauss_wts` only returns half of the symmetric weights).
+"""
+function gauss_weights(cfg::SHTnsCfg)
+    _weights = zeros(cfg.nlat_2)
+    SHTns.shtns_gauss_wts(cfg.cfg,_weights)
+    return vcat(_weights,reverse(_weights))
+end
+
+export LM, LM_cplx, grid, gauss_weights
