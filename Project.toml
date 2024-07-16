@@ -1,7 +1,7 @@
 name = "SHTns"
 uuid = "5dc4ea12-f621-4038-8458-a22eae100703"
 authors = ["Felix Gerick"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 SHTns_jll = "daf09cc5-9ab3-509e-9618-0b89086eb825"
