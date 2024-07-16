@@ -102,10 +102,10 @@ end
 
 function _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
     @assert lmax > 1 
-    # @assert nphi > 2lmax 
     @assert mmax*mres <= lmax
     @assert mres > 0 
-    @assert nlat >= 32 #shtns wants nlat > 4*VSIZE2
+    @assert nlat >= 16 # shtns wants nlat > 4*VSIZE2
+    @assert nphi > 2mmax # sampling theorem
     if typeof(shtype) <: Union{Gauss, GaussFly, QuickInit} 
         @assert nlat > lmax
     else
