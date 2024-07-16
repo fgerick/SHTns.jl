@@ -289,7 +289,7 @@ function SH_to_point(cfg, Qlm, cost, phi)
 end
 
 function SH_to_point_cplx(cfg, alm, cost, phi)
-    ccall((:SH_to_point_cplx, libshtns[]), cplx, (shtns_cfg, Ptr{ComplexF64}, Float64, Float64), cfg, alm, cost, phi)
+    ccall((:SH_to_point_cplx, libshtns[]), ComplexF64, (shtns_cfg, Ptr{ComplexF64}, Float64, Float64), cfg, alm, cost, phi)
 end
 
 function SH_to_grad_point(cfg, DrSlm, Slm, cost, phi, vr, vt, vp)

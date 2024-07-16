@@ -14,4 +14,10 @@
 	@test (@allocated SHTns.synth!(cfg,x,y)) == 0
 	@test (@allocated SHTns.analys!(cfg,y,x)) == 0
 
+	y = complex(y)
+	x = SHTns.analys(cfg, y)
+
+	@test (@allocated SHTns.analys!(cfg,y,x)) == 0
+	@test (@allocated SHTns.synth!(cfg,x,y)) == 0
+
 end

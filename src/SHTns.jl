@@ -15,9 +15,6 @@ function __init__()
 end
 
 
-# using SHTns_jll
-# export SHTns_jll
-
 import Base: convert, show, propertynames, getproperty
 
 
