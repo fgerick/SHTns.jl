@@ -82,16 +82,22 @@ for (type, enumtype) in [(:Gauss, :sht_gauss), (:RegFast, :sht_reg_fast), (:RegD
         
         """
         Base.@kwdef struct $(type)<:SHTnsType
-            contiguous_lat::Bool=false
+            contiguous_lat::Bool=true
             contiguous_phi::Bool=false
             padding::Bool=false
+            gpu::Bool=false
+            southpolefirst::Bool=false
+            float32::Bool=false
         end
 
         function Base.convert(::Type{shtns_type}, x::$(type)) 
             shtype = $(enumtype) 
-            x.contiguous_lat && (shtype += SHT_THETA_CONTIGUOUS)
             x.contiguous_phi && (shtype += SHT_PHI_CONTIGUOUS) 
             x.padding && (shtype += SHT_ALLOW_PADDING)
+            x.gpu && (shtype += SHT_ALLOW_GPU)
+            x.contiguous_lat && (shtype += SHT_THETA_CONTIGUOUS)
+            x.southpolefirst && (shtype += SHT_SOUTH_POLE_FIRST)
+            x.float32 && (shtype += SHT_FP32)
             return shtype
         end
     end
@@ -223,6 +229,7 @@ const SHT_SCALAR_ONLY = UInt32(256 * 16)
 const SHT_LOAD_SAVE_CFG = UInt32(256 * 64)
 const SHT_ALLOW_GPU = UInt32(256 * 128)
 const SHT_ALLOW_PADDING = UInt32(256 * 256)
+const SHT_FP32 = UInt32(256 * 1024)
 
 include("sht.jl")
 include("tools.jl")

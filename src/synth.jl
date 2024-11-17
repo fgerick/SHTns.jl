@@ -6,7 +6,11 @@ DOCSTRING
 function synth(cfg::SHTnsCfg, qlm)
     @assert cfg.nlat != 0
     @assert length(qlm) == cfg.nlm
-    v = Matrix{Float64}(undef, cfg.nlat_padded, cfg.nphi)
+
+    nx = cfg.shtype.contiguous_phi ? cfg.nphi : cfg.nlat_padded
+    ny = cfg.shtype.contiguous_phi ? cfg.nlat_padded : cfg.nphi
+     
+    v = Matrix{Float64}(undef, nx, ny)
     synth!(cfg, qlm, v)
     return v
 end
@@ -20,7 +24,11 @@ function synth_cplx(cfg::SHTnsCfg, qlm)
     @assert cfg.nlat != 0
     @assert length(qlm) == cfg.nlm_cplx
     @assert cfg.lmax == cfg.mmax
-    v = Matrix{ComplexF64}(undef, cfg.nlat_padded, cfg.nphi)
+
+    nx = cfg.shtype.contiguous_phi ? cfg.nphi : cfg.nlat_padded
+    ny = cfg.shtype.contiguous_phi ? cfg.nlat_padded : cfg.nphi
+     
+    v = Matrix{ComplexF64}(undef, nx, ny)
     synth!(cfg, qlm, v)
     return v
 end
@@ -38,8 +46,12 @@ DOCSTRING
 function synth(cfg::SHTnsCfg, slm, tlm)
     @assert cfg.nlat != 0
     @assert length(slm) == length(tlm) == cfg.nlm
-    utheta = Matrix{Float64}(undef, cfg.nlat_padded, cfg.nphi)
-    uphi = Matrix{Float64}(undef, cfg.nlat_padded, cfg.nphi)
+
+    nx = cfg.shtype.contiguous_phi ? cfg.nphi : cfg.nlat_padded
+    ny = cfg.shtype.contiguous_phi ? cfg.nlat_padded : cfg.nphi
+     
+    utheta = Matrix{Float64}(undef, nx, ny)
+    uphi = Matrix{Float64}(undef, nx, ny)
     synth!(cfg, slm, tlm, utheta, uphi)
     return utheta, uphi
 end
@@ -58,8 +70,12 @@ function synth_cplx(cfg::SHTnsCfg, slm, tlm)
     @assert cfg.nlat != 0
     @assert length(slm) == length(tlm) == cfg.nlm_cplx
     @assert cfg.lmax == cfg.mmax
-    utheta = Matrix{ComplexF64}(undef, cfg.nlat_padded, cfg.nphi)
-    uphi = Matrix{ComplexF64}(undef, cfg.nlat_padded, cfg.nphi)
+
+    nx = cfg.shtype.contiguous_phi ? cfg.nphi : cfg.nlat_padded
+    ny = cfg.shtype.contiguous_phi ? cfg.nlat_padded : cfg.nphi
+     
+    utheta = Matrix{ComplexF64}(undef, nx, ny)
+    uphi = Matrix{ComplexF64}(undef, nx, ny)
     synth!(cfg, slm, tlm, utheta, uphi)
     return utheta, uphi
 end
@@ -78,9 +94,12 @@ DOCSTRING
 function synth(cfg::SHTnsCfg, qlm, slm, tlm)
     @assert cfg.nlat != 0
     @assert length(qlm) == length(slm) == length(tlm) == cfg.nlm
-    ur = Matrix{Float64}(undef, cfg.nlat, cfg.nphi)
-    utheta = Matrix{Float64}(undef, cfg.nlat_padded, cfg.nphi)
-    uphi = Matrix{Float64}(undef, cfg.nlat_padded, cfg.nphi)
+    nx = cfg.shtype.contiguous_phi ? cfg.nphi : cfg.nlat_padded
+    ny = cfg.shtype.contiguous_phi ? cfg.nlat_padded : cfg.nphi
+     
+    ur = Matrix{Float64}(undef, nx, ny)
+    utheta = Matrix{Float64}(undef, nx, ny)
+    uphi = Matrix{Float64}(undef, nx, ny)
     synth!(cfg, qlm, slm, tlm, ur, utheta, uphi)
     return ur, utheta, uphi
 end
@@ -100,9 +119,13 @@ function synth_cplx(cfg::SHTnsCfg, qlm, slm, tlm)
     @assert cfg.nlat != 0
     @assert length(qlm) == length(slm) == length(tlm) == cfg.nlm_cplx
     @assert cfg.lmax == cfg.mmax
-    ur = Matrix{ComplexF64}(undef, cfg.nlat_padded, cfg.nphi)
-    utheta = Matrix{ComplexF64}(undef, cfg.nlat_padded, cfg.nphi)
-    uphi = Matrix{ComplexF64}(undef, cfg.nlat_padded, cfg.nphi)
+
+    nx = cfg.shtype.contiguous_phi ? cfg.nphi : cfg.nlat_padded
+    ny = cfg.shtype.contiguous_phi ? cfg.nlat_padded : cfg.nphi
+     
+    ur = Matrix{ComplexF64}(undef, nx, ny)
+    utheta = Matrix{ComplexF64}(undef, nx, ny)
+    uphi = Matrix{ComplexF64}(undef, nx, ny)
     synth!(cfg, qlm, slm, tlm, ur, utheta, uphi)
     return ur, utheta, uphi
 end
