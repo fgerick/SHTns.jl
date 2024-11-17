@@ -63,11 +63,11 @@ function analys!(cfg::SHTnsCfg, utheta::T, uphi::T, slm, tlm) where {T<:Abstract
 end
 
 function analys!(cfg::SHTnsCfg, ur::T, utheta::T, uphi::T, qlm, slm, tlm) where {T<:AbstractMatrix{Float64}}
-    return spat_cplx_to_SHqst(cfg.cfg, ur, utheta, uphi, qlm, slm, tlm)
+    return spat_to_SHqst(cfg.cfg, ur, utheta, uphi, qlm, slm, tlm)
 end
 
 function analys!(cfg::SHTnsCfg, ur::T, utheta::T, uphi::T, qlm, slm, tlm) where {T<:AbstractMatrix{ComplexF64}}
-    return spat_to_SHqst(cfg.cfg, ur, utheta, uphi, qlm, slm, tlm)
+    return spat_cplx_to_SHqst(cfg.cfg, ur, utheta, uphi, qlm, slm, tlm)
 end
 
 
