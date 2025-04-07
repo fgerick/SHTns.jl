@@ -308,3 +308,7 @@ function SHqst_to_lat(cfg, Qlm, Slm, Tlm, cost, vr, vt, vp, nphi, ltr, mtr)
     ccall((:SHqst_to_lat, libshtns[]), Nothing, (shtns_cfg, Ptr{ComplexF64}, Ptr{ComplexF64}, Ptr{ComplexF64}, Float64, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Int32, Int32, Int32), cfg, Qlm, Slm, Tlm, cost, vr, vt, vp, nphi, ltr, mtr)
 end
 
+function shtns_set_many(shtns, howmany, spec_dist)
+    hm = ccall((:shtns_set_many, libshtns[]), Int32, (shtns_cfg, Int32, Int64), shtns, howmany, spec_dist)
+    @assert hm == howmany
+end

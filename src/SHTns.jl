@@ -82,16 +82,22 @@ for (type, enumtype) in [(:Gauss, :sht_gauss), (:RegFast, :sht_reg_fast), (:RegD
         
         """
         Base.@kwdef struct $(type)<:SHTnsType
-            contiguous_lat::Bool=false
+            contiguous_lat::Bool=true
             contiguous_phi::Bool=false
             padding::Bool=false
+            gpu::Bool=false
+            southpolefirst::Bool=false
+            float32::Bool=false
         end
 
         function Base.convert(::Type{shtns_type}, x::$(type)) 
             shtype = $(enumtype) 
-            x.contiguous_lat && (shtype += SHT_THETA_CONTIGUOUS)
             x.contiguous_phi && (shtype += SHT_PHI_CONTIGUOUS) 
             x.padding && (shtype += SHT_ALLOW_PADDING)
+            x.gpu && (shtype += SHT_ALLOW_GPU)
+            x.contiguous_lat && (shtype += SHT_THETA_CONTIGUOUS)
+            x.southpolefirst && (shtype += SHT_SOUTH_POLE_FIRST)
+            x.float32 && (shtype += SHT_FP32)
             return shtype
         end
     end
@@ -115,7 +121,7 @@ end
 
 Configuration of spherical harmonic transform.
 """
-mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
+mutable struct SHTnsCfg{TR<:Union{Real,Complex}, N<:SHTnsNorm, T<:SHTnsType}
     cfg::Ptr{shtns_info}
     norm::N
     shtype::T
@@ -134,23 +140,32 @@ mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
     st::Vector{Float64}
     nlat_padded::Int
     nlm_cplx::Int
+    howmany::Int
     function SHTnsCfg(lmax, mmax, mres, nlat, nphi; 
                         shtype::T=QuickInit(), 
                         norm::N=Orthonormal(), 
                         eps=1e-10, 
                         robert_form=false,
+                        howmany = 1,
+                        transform::Union{Type{Real}, Type{Complex}} = Real
                         ) where {T<:SHTnsType, N<:SHTnsNorm}
 
         _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
         cfg = shtns_create(lmax, mmax, mres, norm)
         robert_form && shtns_robert_form(cfg,1)
+        if howmany > 1 
+            @assert transform == Real "Only real transform is supported for batched transforms"
+            info = unsafe_load(cfg)
+            spec_dist = transform == Real ? info.nlm : info.nlm_cplx
+            shtns_set_many(cfg, howmany, spec_dist)
+        end
         shtns_set_grid(cfg, shtype, eps, nlat, nphi)
         info = unsafe_load(cfg)
         li = Vector{Int}(unsafe_wrap(Vector{Cushort},info.li,Int(info.nlm)))
         mi = Vector{Int}(unsafe_wrap(Vector{Cushort},info.mi,Int(info.nlm)))
         ct = Vector{Float64}(unsafe_wrap(Vector{Cdouble},info.ct,Int(info.nlat)))
         st = Vector{Float64}(unsafe_wrap(Vector{Cdouble},info.st,Int(info.nlat)))
-        stream = new{N,T}(cfg, norm, shtype, robert_form, info.nlm, info.lmax, info.mmax, info.mres, info.nlat_2, info.nlat, info.nphi, info.nspat, li, mi, ct, st, info.nlat_padded, info.nlm_cplx)
+        stream = new{transform,N,T}(cfg, norm, shtype, robert_form, info.nlm, info.lmax, info.mmax, info.mres, info.nlat_2, info.nlat, info.nphi, info.nspat, li, mi, ct, st, info.nlat_padded, info.nlm_cplx, howmany)
         finalizer(x->shtns_destroy(x.cfg), stream)
         return stream
     end
@@ -160,6 +175,8 @@ mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
         eps=1e-10, 
         robert_form=false,
         nl_order = 0,
+        howmany = 1,
+        transform::Union{Type{Real}, Type{Complex}} = Real
         ) where {T<:SHTnsType, N<:SHTnsNorm}
 
         @assert lmax > 1 
@@ -169,13 +186,19 @@ mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
         cfg = shtns_create(lmax, mmax, mres, norm)
         robert_form && shtns_robert_form(cfg,1)
         info = unsafe_load(cfg)
+        if howmany > 1 
+            @assert transform == Real "Only real transform is supported for batched transforms"
+            info = unsafe_load(cfg)
+            spec_dist = transform == Real ? info.nlm : info.nlm_cplx
+            shtns_set_many(cfg, howmany, spec_dist)
+        end
         shtns_set_grid_auto(cfg, shtype, eps, nl_order, Ref(info.nlat), Ref(info.nphi))
         info = unsafe_load(cfg)
         li = Vector{Int}(unsafe_wrap(Vector{Cushort},info.li,Int(info.nlm)))
         mi = Vector{Int}(unsafe_wrap(Vector{Cushort},info.mi,Int(info.nlm)))
         ct = Vector{Float64}(unsafe_wrap(Vector{Cdouble},info.ct,Int(info.nlat)))
         st = Vector{Float64}(unsafe_wrap(Vector{Cdouble},info.st,Int(info.nlat)))
-        stream = new{N,T}(cfg, norm, shtype, robert_form, info.nlm, info.lmax, info.mmax, info.mres, info.nlat_2, info.nlat, info.nphi, info.nspat, li, mi, ct, st, info.nlat_padded, info.nlm_cplx)
+        stream = new{transform,N,T}(cfg, norm, shtype, robert_form, info.nlm, info.lmax, info.mmax, info.mres, info.nlat_2, info.nlat, info.nphi, info.nspat, li, mi, ct, st, info.nlat_padded, info.nlm_cplx, howmany)
         finalizer(x->shtns_destroy(x.cfg), stream)
         return stream
     end
@@ -223,6 +246,7 @@ const SHT_SCALAR_ONLY = UInt32(256 * 16)
 const SHT_LOAD_SAVE_CFG = UInt32(256 * 64)
 const SHT_ALLOW_GPU = UInt32(256 * 128)
 const SHT_ALLOW_PADDING = UInt32(256 * 256)
+const SHT_FP32 = UInt32(256 * 1024)
 
 include("sht.jl")
 include("tools.jl")
