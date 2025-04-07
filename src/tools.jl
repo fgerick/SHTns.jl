@@ -1,18 +1,18 @@
 """
-    LM(cfg, l, m)
+    LM(cfg::SHTnsCfg{Real,T,N}, l, m)
 
 Returns index corresponding to `l` and `m` in real spherical harmonic expansion.
 """
-function LM(shtns, l, m)
+function LM(shtns::SHTnsCfg{Real,T,N}, l, m) where {T,N}
     return (Cint(m / shtns.mres) * (2 * shtns.lmax + 2 - (m + shtns.mres))) >> 1 + l + 1
 end
 
 """
-    LM_cplx(cfg, l, m)
+    LM(cfg::SHTnsCfg{Complex,T,N}, l, m)
 
 Returns index corresponding to `l` and `m` in complex spherical harmonic expansion.
 """
-function LM_cplx(shtns, l, m)
+function LM(shtns::SHTnsCfg{Complex,T,N}, l, m) where {T,N}
     return (l <= shtns.mmax) ? l * (l + 1) + m + 1 : shtns.mmax * (2l - shtns.mmax) + l + m + 1
 end
 
@@ -56,4 +56,15 @@ function gauss_weights(cfg::SHTnsCfg)
     return vcat(_weights,reverse(_weights))
 end
 
-export LM, LM_cplx, grid, gauss_weights
+
+function nlm(cfg::SHTnsCfg{Real,T,N}) where {T,N}
+    return cfg.nlm
+end
+
+function nlm(cfg::SHTnsCfg{Complex,T,N}) where {T,N}
+    return cfg.nlm_cplx
+end
+
+
+
+export LM, grid, gauss_weights, nlm
