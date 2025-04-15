@@ -7,7 +7,7 @@ function synth(cfg::SHTnsCfg{TR,T,N}, qlm::CuVector{ComplexF64}) where {TR,T,N}
     nx = cfg.shtype.contiguous_phi ? cfg.nphi : cfg.nlat_padded
     ny = cfg.shtype.contiguous_phi ? cfg.nlat_padded : cfg.nphi
      
-    v = CuMatrix{Tv}(undef, nx, ny)
+    v = cfg.howmany > 1 ? CuArray{Tv}(undef, nx, ny, cfg.howmany) : CuMatrix{Tv}(undef, nx, ny)
     synth!(cfg, qlm, v)
     return v
 end
@@ -21,8 +21,8 @@ function synth(cfg::SHTnsCfg{TR,T,N}, slm::CuVector{ComplexF64}, tlm::CuVector{C
     nx = cfg.shtype.contiguous_phi ? cfg.nphi : cfg.nlat_padded
     ny = cfg.shtype.contiguous_phi ? cfg.nlat_padded : cfg.nphi
      
-    utheta = CuMatrix{Tv}(undef, nx, ny)
-    uphi = CuMatrix{Tv}(undef, nx, ny)
+    utheta = cfg.howmany > 1 ? CuArray{Tv}(undef, nx, ny, cfg.howmany) : CuMatrix{Tv}(undef, nx, ny)
+    uphi = cfg.howmany > 1 ? CuArray{Tv}(undef, nx, ny, cfg.howmany) : CuMatrix{Tv}(undef, nx, ny)
     synth!(cfg, slm, tlm, utheta, uphi)
     return utheta, uphi
 end
@@ -35,27 +35,27 @@ function synth(cfg::SHTnsCfg{TR,T,N}, qlm::CuVector{ComplexF64}, slm::CuVector{C
     nx = cfg.shtype.contiguous_phi ? cfg.nphi : cfg.nlat_padded
     ny = cfg.shtype.contiguous_phi ? cfg.nlat_padded : cfg.nphi
      
-    ur = CuMatrix{Tv}(undef, nx, ny)
-    utheta = CuMatrix{Tv}(undef, nx, ny)
-    uphi = CuMatrix{Tv}(undef, nx, ny)
+    ur = cfg.howmany > 1 ? CuArray{Tv}(undef, nx, ny, cfg.howmany) : CuMatrix{Tv}(undef, nx, ny)
+    utheta = cfg.howmany > 1 ? CuArray{Tv}(undef, nx, ny, cfg.howmany) : CuMatrix{Tv}(undef, nx, ny)
+    uphi = cfg.howmany > 1 ? CuArray{Tv}(undef, nx, ny, cfg.howmany) : CuMatrix{Tv}(undef, nx, ny)
     synth!(cfg, qlm, slm, tlm, ur, utheta, uphi)
     return ur, utheta, uphi
 end
 
 
-function synth!(cfg::SHTnsCfg{Real,T,N}, qlm::CuVector{ComplexF64}, v::CuMatrix{Float64}) where {T,N}
+function synth!(cfg::SHTnsCfg{Real,T,N}, qlm::CuVector{ComplexF64}, v::CuArray{Float64}) where {T,N}
     @assert cfg.shtype.gpu
     cu_SH_to_spat(cfg.cfg, qlm, v, cfg.lmax)
     return v
 end
 
-function synth!(cfg::SHTnsCfg{Real,T,N}, slm::CuVector{ComplexF64}, tlm::CuVector{ComplexF64}, utheta::Tv, uphi::Tv) where {T,N,Tv<:CuMatrix{Float64}}
+function synth!(cfg::SHTnsCfg{Real,T,N}, slm::CuVector{ComplexF64}, tlm::CuVector{ComplexF64}, utheta::Tv, uphi::Tv) where {T,N,Tv<:CuArray{Float64}}
     @assert cfg.shtype.gpu
     cu_SHsphtor_to_spat(cfg.cfg, slm, tlm, utheta, uphi, cfg.lmax)
     return utheta, uphi
 end
 
-function synth!(cfg::SHTnsCfg{Real,T,N}, qlm::CuVector{ComplexF64}, slm::CuVector{ComplexF64}, tlm::CuVector{ComplexF64}, ur::Tv, utheta::Tv, uphi::Tv) where {T,N,Tv<:CuMatrix{Float64}}
+function synth!(cfg::SHTnsCfg{Real,T,N}, qlm::CuVector{ComplexF64}, slm::CuVector{ComplexF64}, tlm::CuVector{ComplexF64}, ur::Tv, utheta::Tv, uphi::Tv) where {T,N,Tv<:CuArray{Float64}}
     @assert cfg.shtype.gpu
     cu_SHqst_to_spat(cfg.cfg, qlm, slm, tlm, ur, utheta, uphi, cfg.lmax)
     return ur, utheta, uphi
