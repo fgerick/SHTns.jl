@@ -75,8 +75,8 @@ d2_gpu ≈ d_gpu #true
 ```
 
 
-> [!NOTE]
-> ROCm GPUs may be supported in future releases of SHTns.jl (already available in the C library).
+!!! note
+	ROCm GPUs may be supported in future releases of SHTns.jl (already available in the C library).
 
 ## Batched transform
 
@@ -102,7 +102,7 @@ d2 = SHTns.synth(cfg,q)
 d2 ≈ d #true
 ```
 
-> [!NOTE]
-> Complex to complex transforms are currently not supported in the batched transform.
+!!! note
+	Complex to complex transforms are currently not supported in the batched transform.
 
 
