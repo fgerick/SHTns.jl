@@ -70,5 +70,24 @@ function analys!(cfg::SHTnsCfg{Complex,T,N}, ur::Tv, utheta::Tv, uphi::Tv, qlm, 
     return spat_cplx_to_SHqst(cfg.cfg, ur, utheta, uphi, qlm, slm, tlm)
 end
 
+"""
+    analys!(cfg::SHTnsCfg, v, qlm)
+    analys!(cfg::SHTnsCfg, utheta, uphi, slm, tlm)
+    analys!(cfg::SHTnsCfg, ur, utheta, uphi, qlm, slm, tlm)
+
+In-place transforms of the spatial data into spherical harmonics coefficients for scalar, 2D or 3D fields.
+!!! warning 
+    This function modifies the input arrays `v`, `ur`, `utheta` and `uphi`.
+"""
+function analys! end
+
+"""
+    analys(cfg::SHTnsCfg, v)
+    analys(cfg::SHTnsCfg, utheta, uphi)
+    analys(cfg::SHTnsCfg, ur, utheta, uphi)
+
+Transforms the spatial data into spherical harmonics coefficients `qlm`; `slm` and `tlm`; `qlm`, `slm` and `tlm` for scalar; 2D; 3D fields, respectively.
+"""
+function analys end
 
 export analys, analys!

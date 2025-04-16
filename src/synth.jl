@@ -1,8 +1,3 @@
-"""
-    synth(cfg::SHTnsCfg, qlm)
-
-DOCSTRING
-"""
 function synth(cfg::SHTnsCfg{TR,T,N}, qlm) where {TR,T,N}
     Tv = TR == Real ? Float64 : ComplexF64 
 
@@ -17,16 +12,6 @@ function synth(cfg::SHTnsCfg{TR,T,N}, qlm) where {TR,T,N}
     return v
 end
 
-"""
-    synth(cfg::SHTnsCfg, slm, tlm)
-
-DOCSTRING
-
-# Arguments:
-- `cfg`: DESCRIPTION
-- `slm`: DESCRIPTION
-- `tlm`: DESCRIPTION
-"""
 function synth(cfg::SHTnsCfg{TR,T,N}, slm, tlm) where {TR,T,N}
     Tv = TR == Real ? Float64 : ComplexF64
     @assert cfg.nlat != 0
@@ -42,17 +27,6 @@ function synth(cfg::SHTnsCfg{TR,T,N}, slm, tlm) where {TR,T,N}
     return utheta, uphi
 end
 
-"""
-    synth(cfg::SHTnsCfg, qlm, slm, tlm)
-
-DOCSTRING
-
-# Arguments:
-- `cfg`: DESCRIPTION
-- `qlm`: DESCRIPTION
-- `slm`: DESCRIPTION
-- `tlm`: DESCRIPTION
-"""
 function synth(cfg::SHTnsCfg{TR,T,N}, qlm, slm, tlm) where {TR,T,N}
     Tv = TR == Real ? Float64 : ComplexF64
     @assert cfg.nlat != 0
@@ -102,5 +76,22 @@ function synth!(cfg::SHTnsCfg{Complex,T,N}, qlm, slm, tlm, ur::Tv, utheta::Tv, u
     return ur, utheta, uphi
 end
 
+"""
+    synth(cfg::SHTnsCfg, qlm)
+    synth(cfg::SHTnsCfg, slm, tlm)
+    synth(cfg::SHTnsCfg, qlm, slm, tlm)
+
+Transforms spherical harmonics coefficients `qlm` into spatial data `v`; `slm` and `tlm` into spatial data `utheta` and `uphi`; `qlm`, `slm` and `tlm` into spatial data `ur`, `utheta` and `uphi`.
+"""
+function synth end
+
+"""
+    synth!(cfg::SHTnsCfg, qlm, v)
+    synth!(cfg::SHTnsCfg, slm, tlm, utheta, uphi)
+    synth!(cfg::SHTnsCfg, qlm, slm, tlm, ur, utheta, uphi)
+
+In-place transforms of the spherical harmonics coefficients into spatial data for scalar, 2D or 3D fields.
+"""
+function synth! end
 
 export synth, synth!

@@ -73,6 +73,18 @@ for (type, enumtype) in [(:Orthonormal, :sht_orthonormal), (:FourPi, :sht_fourpi
     end
 end
 
+"""
+    abstract type SHTnsType
+
+SHTnsType is an abstract type for the spherical harmonic transform types. All subtypes contain the following keyword arguments:
+
+- `contiguous_lat::Bool=true`
+- `contiguous_phi::Bool=false`
+- `padding::Bool=false`
+- `gpu::Bool=false`
+- `southpolefirst::Bool=false`
+- `float32::Bool=false`
+"""
 abstract type SHTnsType end
 
 for (type, enumtype) in [(:Gauss, :sht_gauss), (:RegFast, :sht_reg_fast), (:RegDCT, :sht_reg_dct), (:QuickInit, :sht_quick_init), (:RegPoles, :sht_reg_poles), (:GaussFly, :sht_gauss_fly) ] #(:Auto, :sht_auto), 
@@ -117,7 +129,27 @@ function _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
 end
 
 """
-    mutable struct SHTnsCfg{N<:SHTnsNorm, T<:SHTnsType}
+    mutable struct SHTnsCfg{TR<:Union{Real,Complex}, N<:SHTnsNorm, T<:SHTnsType}
+    
+- `cfg::Ptr{shtns_info}`
+- `norm::N`
+- `shtype::T`
+- `robert_form::Bool`
+- `nlm::Int`
+- `lmax::Int`
+- `mmax::Int`
+- `mres::Int`
+- `nlat_2::Int`
+- `nlat::Int`
+- `nphi::Int`
+- `nspat::Int`
+- `li::Vector{Int}`
+- `mi::Vector{Int}`
+- `ct::Vector{Float64}`
+- `st::Vector{Float64}`
+- `nlat_padded::Int`
+- `nlm_cplx::Int`
+- `howmany::Int`
 
 Configuration of spherical harmonic transform.
 """
