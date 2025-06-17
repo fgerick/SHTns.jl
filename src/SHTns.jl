@@ -63,11 +63,13 @@ for (type, enumtype) in [(:Orthonormal, :sht_orthonormal), (:FourPi, :sht_fourpi
         """
         Base.@kwdef struct $(type)<:SHTnsNorm 
             cs_phase::Bool=true
+            real_norm::Bool=false
         end
 
         function Base.convert(::Type{shtns_norm}, x::$(type))
             norm = $(enumtype)
             !x.cs_phase && (norm += SHT_NO_CS_PHASE)
+            x.real_norm && (norm += SHT_REAL_NORM)
             return norm
         end
     end
