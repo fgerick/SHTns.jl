@@ -1,6 +1,7 @@
 using SHTns
 using Test
 using LinearAlgebra
+using BenchmarkTools
 
 @testset "init threads" begin
 
