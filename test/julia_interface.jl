@@ -11,15 +11,19 @@
 
 
 	#test no-allocations
-	@test (@allocated SHTns.synth!(cfg,x,y)) == 0
-	@test (@allocated SHTns.analys!(cfg,y,x)) == 0
+	b = @benchmark SHTns.synth!($cfg,$x,$y)
+	@test b.memory == 0
+	b = @benchmark SHTns.analys!($cfg,$y,$x)
+	@test b.memory == 0
 
 	y = complex(y)
 	cfg = SHTnsCfg(L; transform=Complex)
 	x = SHTns.analys(cfg, y)
 
-	@test (@allocated SHTns.analys!(cfg,y,x)) == 0
-	@test (@allocated SHTns.synth!(cfg,x,y)) == 0
+	b = @benchmark SHTns.analys!($cfg,$y,$x)
+	@test b.memory == 0
+	b = @benchmark SHTns.synth!($cfg,$x,$y)
+	@test b.memory == 0
 
 end
 
