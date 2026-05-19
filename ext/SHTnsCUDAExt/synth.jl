@@ -61,6 +61,23 @@ function synth!(cfg::SHTnsCfg{Real,T,N}, qlm::CuVector{ComplexF64}, slm::CuVecto
     return ur, utheta, uphi
 end
 
+function synth!(cfg::SHTnsCfg{Real,T,N}, qlm::CuMatrix{ComplexF64}, v::CuArray{Float64}) where {T,N}
+    @assert cfg.shtype.gpu
+    cu_SH_to_spat(cfg.cfg, qlm, v, cfg.lmax)
+    return v
+end
+
+function synth!(cfg::SHTnsCfg{Real,T,N}, slm::CuMatrix{ComplexF64}, tlm::CuMatrix{ComplexF64}, utheta::Tv, uphi::Tv) where {T,N,Tv<:CuArray{Float64}}
+    @assert cfg.shtype.gpu
+    cu_SHsphtor_to_spat(cfg.cfg, slm, tlm, utheta, uphi, cfg.lmax)
+    return utheta, uphi
+end
+
+function synth!(cfg::SHTnsCfg{Real,T,N}, qlm::CuMatrix{ComplexF64}, slm::CuMatrix{ComplexF64}, tlm::CuMatrix{ComplexF64}, ur::Tv, utheta::Tv, uphi::Tv) where {T,N,Tv<:CuArray{Float64}}
+    @assert cfg.shtype.gpu
+    cu_SHqst_to_spat(cfg.cfg, qlm, slm, tlm, ur, utheta, uphi, cfg.lmax)
+    return ur, utheta, uphi
+end
 
 #complex to complex not available for CUDA (status: SHTns v3.7)
 
