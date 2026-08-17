@@ -89,5 +89,3 @@ function analys! end
 Transforms the spatial data into spherical harmonics coefficients `qlm`; `slm` and `tlm`; `qlm`, `slm` and `tlm` for scalar; 2D; 3D fields, respectively.
 """
 function analys end
-
-export analys, analys!

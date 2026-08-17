@@ -93,5 +93,3 @@ function synth end
 In-place transforms of the spherical harmonics coefficients into spatial data for scalar, 2D or 3D fields.
 """
 function synth! end
-
-export synth, synth!

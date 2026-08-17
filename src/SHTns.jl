@@ -4,14 +4,11 @@ using SHTns_jll
 #to use system build SHTns library (needs to be a shared library)
 # e.g. using 
 # gcc -lfftw3 -lfftw3_omp -fopenmp -shared libshtns.so *.o 
-const libshtns = Ref{String}()
 
-function __init__()
-    if haskey(ENV, "SHTNS_PATH")
-        libshtns[] = ENV["SHTNS_PATH"]
-    else
-        libshtns[] = SHTns_jll.LibSHTns
-    end
+@static if haskey(ENV, "SHTNS_PATH")
+    const libshtns = ENV["SHTNS_PATH"]
+else
+    const libshtns = SHTns_jll.LibSHTns
 end
 
 
@@ -257,8 +254,6 @@ end
 
 const shtns_cfg = Ptr{shtns_info}
 
-export SHTnsCfg
-
 const cplx = ComplexF64
 
 const cplx_f = ComplexF64
@@ -285,12 +280,9 @@ include("tools.jl")
 include("synth.jl")
 include("analys.jl")
 
-
-#export most functions
-foreach(names(@__MODULE__, all=true)) do s
-    if startswith(string(s), "sht") || startswith(string(s), "SH") || startswith(string(s), "spat")
-        @eval export $s
-    end
- end
+export SHTnsCfg
+export LM, grid, gauss_weights, nlm
+export synth, synth!
+export analys, analys!
  
 end # module

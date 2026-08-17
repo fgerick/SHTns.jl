@@ -5,8 +5,8 @@ using BenchmarkTools
 
 @testset "init threads" begin
 
-    @test shtns_use_threads(4) == 4
-    @test shtns_use_threads(1) == 1
+    @test SHTns.shtns_use_threads(4) == 4
+    @test SHTns.shtns_use_threads(1) == 1
 end
 
 @testset "SHT_example.c" begin
@@ -19,8 +19,8 @@ end
     shtype = SHTns.QuickInit()
 
 
-    shtns_use_threads(1)
-    shtns_verbose(1)
+    SHTns.shtns_use_threads(1)
+    SHTns.shtns_verbose(1)
 
     sht = SHTnsCfg(lmax, mmax, mres, nlat, nphi; shtype)
 
@@ -34,19 +34,19 @@ end
 
     Slm2 = copy(Slm)
 
-    SH_to_spat(sht.cfg, Slm, Sh)
+    SHTns.SH_to_spat(sht.cfg, Slm, Sh)
 
-    spat_to_SH(sht.cfg,Sh,Slm2)
+    SHTns.spat_to_SH(sht.cfg,Sh,Slm2)
 
     @test Slm≈Slm2
 
-    SHtor_to_spat(sht.cfg, Slm,Th,Sh)
+    SHTns.SHtor_to_spat(sht.cfg, Slm,Th,Sh)
 
     t = [0.0]
     t2 = [0.0]
 
 
-    SHqst_to_point(sht.cfg,Tlm,Tlm,Slm, sht.ct[round(Int,nlat/3)],2pi/(mres*nphi),t2,t2,t)
+    SHTns.SHqst_to_point(sht.cfg,Tlm,Tlm,Slm, sht.ct[round(Int,nlat/3)],2pi/(mres*nphi),t2,t2,t)
 
 
     @test t[1]≈Sh[round(Int,nlat/3)]≈0.826862474446353
@@ -64,7 +64,7 @@ end
 
 
     # shtns_use_threads(0)
-    shtns_verbose(1)
+    SHTns.shtns_verbose(1)
 
     norms = [SHTns.Orthonormal(), SHTns.FourPi(), SHTns.Schmidt()]
     shts = [SHTnsCfg(lmax, mmax, mres, nlat, nphi; shtype, norm) for norm in norms]
@@ -79,9 +79,9 @@ end
             Slm[LM(sht,l,0)] = fac(l)
             Slm2 = copy(Slm)
 
-            SH_to_spat(sht.cfg, Slm, Sh)
+            SHTns.SH_to_spat(sht.cfg, Slm, Sh)
 
-            spat_to_SH(sht.cfg,Sh,Slm2)
+            SHTns.spat_to_SH(sht.cfg,Sh,Slm2)
 
             @test Slm≈Slm2
         end

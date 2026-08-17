@@ -7,22 +7,22 @@
 
 	y = cos.(theta)*sin.(phi)'
 
-	x = SHTns.analys(cfg, y)
+	x = analys(cfg, y)
 
 
 	#test no-allocations
-	b = @benchmark SHTns.synth!($cfg,$x,$y)
+	b = @benchmark synth!($cfg,$x,$y)
 	@test b.memory == 0
-	b = @benchmark SHTns.analys!($cfg,$y,$x)
+	b = @benchmark analys!($cfg,$y,$x)
 	@test b.memory == 0
 
 	y = complex(y)
 	cfg = SHTnsCfg(L; transform=Complex)
-	x = SHTns.analys(cfg, y)
+	x = analys(cfg, y)
 
-	b = @benchmark SHTns.analys!($cfg,$y,$x)
+	b = @benchmark analys!($cfg,$y,$x)
 	@test b.memory == 0
-	b = @benchmark SHTns.synth!($cfg,$x,$y)
+	b = @benchmark synth!($cfg,$x,$y)
 	@test b.memory == 0
 
 end
@@ -40,15 +40,15 @@ end
 
 		
 		x = synth(cfg, q)
-		@test SHTns.analys(cfg, x) ≈ q
+		@test analys(cfg, x) ≈ q
 
 		x,y = synth(cfg, q,s) 
-		_q,_s = SHTns.analys(cfg, x,y)
+		_q,_s = analys(cfg, x,y)
 		@test _q ≈ q
 		@test _s ≈ s
 		
 		x,y,z = synth(cfg, q,s,t) 
-		_q,_s,_t = SHTns.analys(cfg, x,y,z)
+		_q,_s,_t = analys(cfg, x,y,z)
 		@test _q ≈ q
 		@test _s ≈ s
 		@test _t ≈ t
@@ -72,16 +72,16 @@ end
 
 		
 		x = synth(cfg, q)
-		@test SHTns.analys(cfg, x) ≈ q
-		# @test SHTns.synth(cfg, q) ≈ x
+		@test analys(cfg, x) ≈ q
+		# @test synth(cfg, q) ≈ x
 
 		x,y = synth(cfg, q,s) 
-		_q,_s = SHTns.analys(cfg, x,y)
+		_q,_s = analys(cfg, x,y)
 		@test _q ≈ q
 		@test _s ≈ s
 		
 		x,y,z = synth(cfg, q,s,t) 
-		_q,_s,_t = SHTns.analys(cfg, x,y,z)
+		_q,_s,_t = analys(cfg, x,y,z)
 		@test _q ≈ q
 		@test _s ≈ s
 		@test _t ≈ t
@@ -102,16 +102,16 @@ end
 
 		
 		x = synth(cfg, q)
-		@test SHTns.analys(cfg, x) ≈ q
-		# @test SHTns.synth(cfg, q) ≈ x
+		@test analys(cfg, x) ≈ q
+		# @test synth(cfg, q) ≈ x
 
 		x,y = synth(cfg, q,s) 
-		_q,_s = SHTns.analys(cfg, x,y)
+		_q,_s = analys(cfg, x,y)
 		@test _q ≈ q
 		@test _s ≈ s
 		
 		x,y,z = synth(cfg, q,s,t) 
-		_q,_s,_t = SHTns.analys(cfg, x,y,z)
+		_q,_s,_t = analys(cfg, x,y,z)
 		@test _q ≈ q
 		@test _s ≈ s
 		@test _t ≈ t
