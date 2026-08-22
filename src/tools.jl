@@ -66,5 +66,3 @@ function nlm(cfg::SHTnsCfg{Complex,T,N}) where {T,N}
 end
 
 
-
-export LM, grid, gauss_weights, nlm
