@@ -280,7 +280,7 @@ include("tools.jl")
 include("synth.jl")
 include("analys.jl")
 
-export SHTnsCfg
+export SHTnsCfg, SHTnsType
 export LM, grid, gauss_weights, nlm
 export synth, synth!
 export analys, analys!
