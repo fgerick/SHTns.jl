@@ -70,17 +70,29 @@ end
 
 function analys!(cfg::SHTnsCfg, v::CuArray{Float64}, qlm::CuMatrix{ComplexF64})
     @assert cfg.shtype.gpu
+    @assert cfg.lmax == sizef(qlm, 1)
+    @assert cfg.howmany == size(qlm, 2)
     return cu_spat_to_SH(cfg.cfg, v, qlm, cfg.lmax)
 end
 
 
 function analys!(cfg::SHTnsCfg, utheta::T, uphi::T, slm::CuMatrix{ComplexF64}, tlm::CuMatrix{ComplexF64}) where {T<:CuArray{Float64}}
     @assert cfg.shtype.gpu
+    @assert cfg.lmax == sizef(slm, 1)
+    @assert cfg.lmax == sizef(tlm, 1)
+    @assert cfg.howmany == size(slm, 2)
+    @assert cfg.howmany == size(tlm, 2)
     return cu_spat_to_SHsphtor(cfg.cfg, utheta, uphi, slm, tlm, cfg.lmax)
 end
 
 function analys!(cfg::SHTnsCfg, ur::T, utheta::T, uphi::T, qlm::CuMatrix{ComplexF64}, slm::CuMatrix{ComplexF64}, tlm::CuMatrix{ComplexF64}) where {T<:CuArray{Float64}}
     @assert cfg.shtype.gpu
+    @assert cfg.lmax == sizef(qlm, 1)
+    @assert cfg.lmax == sizef(slm, 1)
+    @assert cfg.lmax == sizef(tlm, 1)
+    @assert cfg.howmany == size(qlm, 2)
+    @assert cfg.howmany == size(slm, 2)
+    @assert cfg.howmany == size(tlm, 2)
     return cu_spat_to_SHqst(cfg.cfg, ur, utheta, uphi, qlm, slm, tlm, cfg.lmax)
 end
 
