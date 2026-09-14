@@ -1,6 +1,6 @@
 name = "SHTns"
 uuid = "5dc4ea12-f621-4038-8458-a22eae100703"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Felix Gerick"]
 
 [deps]
