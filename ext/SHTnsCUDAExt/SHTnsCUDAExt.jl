@@ -3,7 +3,7 @@ module SHTnsCUDAExt
 using CUDA
 using SHTns
 
-import SHTns: libshtns
+import SHTns: libshtns, shtns_cfg
 import SHTns: synth, synth!, analys, analys!
 
 __init__() = @assert CUDA.functional()

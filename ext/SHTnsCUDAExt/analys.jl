@@ -1,100 +1,47 @@
-function analys(cfg::SHTnsCfg, v::CuArray{Float64})
+function analys(cfg::SHTnsCfg, v::CuArray{T}) where T
     @assert cfg.shtype.gpu
     @assert cfg.nlat != 0
-    qlm = CuVector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
+    qlm = cfg.howmany > 1 ? CuMatrix{complex(T)}(undef, nlm(cfg), cfg.howmany) : CuVector{complex(T)}(undef, nlm(cfg))
     analys!(cfg, copy(v), qlm)
     return qlm
 end
 
-function analys(cfg::SHTnsCfg, v::CuArray{ComplexF64})
+function analys(cfg::SHTnsCfg, utheta::CuArray{T}, uphi::CuArray{T}) where T
     @assert cfg.shtype.gpu
     @assert cfg.nlat != 0
-    qlm = CuVector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
-    analys!(cfg, copy(v), qlm)
-    return qlm
-end
-
-function analys(cfg::SHTnsCfg, utheta::CuArray{Float64}, uphi::CuArray{Float64})
-    @assert cfg.shtype.gpu
-    @assert cfg.nlat != 0
-    slm = CuVector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
-    tlm = CuVector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
+    slm = cfg.howmany > 1 ? CuMatrix{complex(T)}(undef, nlm(cfg), cfg.howmany) : CuVector{complex(T)}(undef, nlm(cfg))
+    tlm = cfg.howmany > 1 ? CuMatrix{complex(T)}(undef, nlm(cfg), cfg.howmany) : CuVector{complex(T)}(undef, nlm(cfg))
     analys!(cfg, copy(utheta), copy(uphi), slm, tlm)
     return slm, tlm
 end
 
-function analys(cfg::SHTnsCfg, utheta::CuArray{ComplexF64}, uphi::CuArray{ComplexF64})
+function analys(cfg::SHTnsCfg, ur::CuArray{T}, utheta::CuArray{T}, uphi::CuArray{T}) where T
     @assert cfg.shtype.gpu
     @assert cfg.nlat != 0
-    slm = CuVector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
-    tlm = CuVector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
-    analys!(cfg, copy(utheta), copy(uphi), slm, tlm)
-    return slm, tlm
-end
-
-function analys(cfg::SHTnsCfg, ur::CuArray{Float64}, utheta::CuArray{Float64}, uphi::CuArray{Float64})
-    @assert cfg.shtype.gpu
-    @assert cfg.nlat != 0
-    qlm = CuVector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
-    slm = CuVector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
-    tlm = CuVector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
+    qlm = cfg.howmany > 1 ? CuMatrix{complex(T)}(undef, nlm(cfg), cfg.howmany) : CuVector{complex(T)}(undef, nlm(cfg))
+    slm = cfg.howmany > 1 ? CuMatrix{complex(T)}(undef, nlm(cfg), cfg.howmany) : CuVector{complex(T)}(undef, nlm(cfg))
+    tlm = cfg.howmany > 1 ? CuMatrix{complex(T)}(undef, nlm(cfg), cfg.howmany) : CuVector{complex(T)}(undef, nlm(cfg))
     analys!(cfg, copy(ur), copy(utheta), copy(uphi), qlm, slm, tlm)
     return qlm, slm, tlm
 end
 
-function analys(cfg::SHTnsCfg, ur::CuArray{ComplexF64}, utheta::CuArray{ComplexF64}, uphi::CuArray{ComplexF64})
-    @assert cfg.shtype.gpu
-    @assert cfg.nlat != 0
-    qlm = CuVector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
-    slm = CuVector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
-    tlm = CuVector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
-    analys!(cfg, copy(ur), copy(utheta), copy(uphi), qlm, slm, tlm)
-    return qlm, slm, tlm
-end
-
-function analys!(cfg::SHTnsCfg, v::CuArray{Float64}, qlm::CuVector{ComplexF64})
+function analys!(cfg::SHTnsCfg, v::CuArray{Float64}, qlm::CuArray{ComplexF64})
     @assert cfg.shtype.gpu
     return cu_spat_to_SH(cfg.cfg, v, qlm, cfg.lmax)
 end
 
 
-function analys!(cfg::SHTnsCfg, utheta::T, uphi::T, slm::CuVector{ComplexF64}, tlm::CuVector{ComplexF64}) where {T<:CuArray{Float64}}
+function analys!(cfg::SHTnsCfg, utheta::T, uphi::T, slm::CuArray{ComplexF64}, tlm::CuArray{ComplexF64}) where {T<:CuArray{Float64}}
     @assert cfg.shtype.gpu
     return cu_spat_to_SHsphtor(cfg.cfg, utheta, uphi, slm, tlm, cfg.lmax)
 end
 
-function analys!(cfg::SHTnsCfg, ur::T, utheta::T, uphi::T, qlm::CuVector{ComplexF64}, slm::CuVector{ComplexF64}, tlm::CuVector{ComplexF64}) where {T<:CuArray{Float64}}
+function analys!(cfg::SHTnsCfg, ur::T, utheta::T, uphi::T, qlm::CuArray{ComplexF64}, slm::CuArray{ComplexF64}, tlm::CuArray{ComplexF64}) where {T<:CuArray{Float64}}
     @assert cfg.shtype.gpu
     return cu_spat_to_SHqst(cfg.cfg, ur, utheta, uphi, qlm, slm, tlm, cfg.lmax)
 end
 
-function analys!(cfg::SHTnsCfg, v::CuArray{Float64}, qlm::CuMatrix{ComplexF64})
-    @assert cfg.shtype.gpu
-    @assert cfg.lmax == size(qlm, 1)
-    @assert cfg.howmany == size(qlm, 2)
-    return cu_spat_to_SH(cfg.cfg, v, qlm, cfg.lmax)
-end
-
-
-function analys!(cfg::SHTnsCfg, utheta::T, uphi::T, slm::CuMatrix{ComplexF64}, tlm::CuMatrix{ComplexF64}) where {T<:CuArray{Float64}}
-    @assert cfg.shtype.gpu
-    @assert cfg.lmax == size(slm, 1)
-    @assert cfg.lmax == size(tlm, 1)
-    @assert cfg.howmany == size(slm, 2)
-    @assert cfg.howmany == size(tlm, 2)
-    return cu_spat_to_SHsphtor(cfg.cfg, utheta, uphi, slm, tlm, cfg.lmax)
-end
-
-function analys!(cfg::SHTnsCfg, ur::T, utheta::T, uphi::T, qlm::CuMatrix{ComplexF64}, slm::CuMatrix{ComplexF64}, tlm::CuMatrix{ComplexF64}) where {T<:CuArray{Float64}}
-    @assert cfg.shtype.gpu
-    @assert cfg.lmax == size(qlm, 1)
-    @assert cfg.lmax == size(slm, 1)
-    @assert cfg.lmax == size(tlm, 1)
-    @assert cfg.howmany == size(qlm, 2)
-    @assert cfg.howmany == size(slm, 2)
-    @assert cfg.howmany == size(tlm, 2)
-    return cu_spat_to_SHqst(cfg.cfg, ur, utheta, uphi, qlm, slm, tlm, cfg.lmax)
-end
+# end
 
 #complex to complex not available for CUDA (status: SHTns v3.7)
 
