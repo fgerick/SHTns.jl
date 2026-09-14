@@ -75,7 +75,6 @@ end
 
 SHTnsType is an abstract type for the spherical harmonic transform types. All subtypes contain the following keyword arguments:
 
-- `contiguous_lat::Bool=true`
 - `contiguous_phi::Bool=false`
 - `padding::Bool=false`
 - `gpu::Bool=false`
@@ -91,7 +90,6 @@ for (type, enumtype) in [(:Gauss, :sht_gauss), (:RegFast, :sht_reg_fast), (:RegD
         
         """
         Base.@kwdef struct $(type)<:SHTnsType
-            contiguous_lat::Bool=true
             contiguous_phi::Bool=false
             padding::Bool=false
             gpu::Bool=false
@@ -101,10 +99,13 @@ for (type, enumtype) in [(:Gauss, :sht_gauss), (:RegFast, :sht_reg_fast), (:RegD
 
         function Base.convert(::Type{shtns_type}, x::$(type)) 
             shtype = $(enumtype) 
-            x.contiguous_phi && (shtype += SHT_PHI_CONTIGUOUS) 
+            if x.contiguous_phi 
+                shtype += SHT_PHI_CONTIGUOUS
+            else
+                shtype += SHT_THETA_CONTIGUOUS
+            end
             x.padding && (shtype += SHT_ALLOW_PADDING)
             x.gpu && (shtype += SHT_ALLOW_GPU)
-            x.contiguous_lat && (shtype += SHT_THETA_CONTIGUOUS)
             x.southpolefirst && (shtype += SHT_SOUTH_POLE_FIRST)
             x.float32 && (shtype += SHT_FP32)
             return shtype
@@ -112,10 +113,17 @@ for (type, enumtype) in [(:Gauss, :sht_gauss), (:RegFast, :sht_reg_fast), (:RegD
     end
 end
 
-function _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
+function _init_checks(shtype, lmax, mmax, mres, howmany)
     @assert lmax > 1 
     @assert mmax*mres <= lmax
     @assert mres > 0 
+    if howmany > 1
+        @assert !shtype.contiguous_phi "Need contiguous latitude (shtype.contiguous_phi = false) for batched transforms"
+    end
+end
+
+function _init_checks(shtype, lmax, mmax, mres, nlat, nphi, howmany)
+    _init_checks(shtype, lmax, mmax, mres, howmany)
     @assert nlat >= 16 # shtns wants nlat > 4*VSIZE2
     @assert nphi > 2mmax # sampling theorem
     if typeof(shtype) <: Union{Gauss, GaussFly, QuickInit} 
@@ -179,7 +187,7 @@ mutable struct SHTnsCfg{TR<:Union{Real,Complex}, N<:SHTnsNorm, T<:SHTnsType}
                         transform::Union{Type{Real}, Type{Complex}} = Real
                         ) where {T<:SHTnsType, N<:SHTnsNorm}
 
-        _init_checks(shtype, lmax, mmax, mres, nlat, nphi)
+        _init_checks(shtype, lmax, mmax, mres, nlat, nphi, howmany)
         cfg = shtns_create(lmax, mmax, mres, norm)
         robert_form && shtns_robert_form(cfg,1)
         if howmany > 1 
@@ -208,9 +216,7 @@ mutable struct SHTnsCfg{TR<:Union{Real,Complex}, N<:SHTnsNorm, T<:SHTnsType}
         transform::Union{Type{Real}, Type{Complex}} = Real
         ) where {T<:SHTnsType, N<:SHTnsNorm}
 
-        @assert lmax > 1 
-        @assert mmax*mres <= lmax
-        @assert mres > 0 
+        _init_checks(shtype, lmax, mmax, mres, howmany)
 
         cfg = shtns_create(lmax, mmax, mres, norm)
         robert_form && shtns_robert_form(cfg,1)
