@@ -56,22 +56,25 @@ function synth!(cfg::SHTnsCfg{Complex,T,N}, qlm, v::Array{ComplexF64}) where {T,
 end
 
 function synth!(cfg::SHTnsCfg{Real,T,N}, slm, tlm, utheta::Tv, uphi::Tv) where {T,N,Tv<:Array{Float64}}
-
+    @assert length(slm) == length(tlm) == nlm(cfg)*cfg.howmany
     SHsphtor_to_spat(cfg.cfg, slm, tlm, utheta, uphi)
     return utheta, uphi
 end
 
 function synth!(cfg::SHTnsCfg{Complex,T,N}, slm, tlm, utheta::Tv, uphi::Tv) where {T,N,Tv<:Array{ComplexF64}}
+    @assert length(slm) == length(tlm) == nlm(cfg)*cfg.howmany
     SHsphtor_to_spat_cplx(cfg.cfg, slm, tlm, utheta, uphi)
     return utheta, uphi
 end
 
 function synth!(cfg::SHTnsCfg{Real,T,N}, qlm, slm, tlm, ur::Tv, utheta::Tv, uphi::Tv) where {T,N,Tv<:Array{Float64}}
+    @assert length(qlm) == length(slm) == length(tlm) == nlm(cfg)*cfg.howmany
     SHqst_to_spat(cfg.cfg, qlm, slm, tlm, ur, utheta, uphi)
     return ur, utheta, uphi
 end
 
 function synth!(cfg::SHTnsCfg{Complex,T,N}, qlm, slm, tlm, ur::Tv, utheta::Tv, uphi::Tv) where {T,N,Tv<:Array{ComplexF64}}
+    @assert length(qlm) == length(slm) == length(tlm) == nlm(cfg)*cfg.howmany
     SHqst_to_spat_cplx(cfg.cfg, qlm, slm, tlm, ur, utheta, uphi)
     return ur, utheta, uphi
 end

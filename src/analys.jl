@@ -1,47 +1,23 @@
-function analys(cfg::SHTnsCfg{Real,T,N}, v::Array{Float64}) where {T,N}
+function analys(cfg::SHTnsCfg{TC,T,N}, v) where {TC,T,N}
     @assert cfg.nlat != 0
-    qlm = Vector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
+    qlm = cfg.howmany > 1 ? Matrix{ComplexF64}(undef, nlm(cfg), cfg.howmany) : Vector{ComplexF64}(undef, nlm(cfg))
     analys!(cfg, copy(v), qlm)
     return qlm
 end
 
-function analys(cfg::SHTnsCfg{Complex,T,N}, v::Array{ComplexF64}) where {T,N}
+function analys(cfg::SHTnsCfg{TC,T,N}, utheta, uphi) where {TC,T,N}
     @assert cfg.nlat != 0
-    qlm = Vector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
-    analys!(cfg, copy(v), qlm)
-    return qlm
-end
-
-function analys(cfg::SHTnsCfg{Real,T,N}, utheta::Array{Float64}, uphi::Array{Float64}) where {T,N}
-    @assert cfg.nlat != 0
-    slm = Vector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
-    tlm = Vector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
+    slm = cfg.howmany > 1 ? Matrix{ComplexF64}(undef, nlm(cfg), cfg.howmany) : Vector{ComplexF64}(undef, nlm(cfg))
+    tlm = cfg.howmany > 1 ? Matrix{ComplexF64}(undef, nlm(cfg), cfg.howmany) : Vector{ComplexF64}(undef, nlm(cfg))
     analys!(cfg, copy(utheta), copy(uphi), slm, tlm)
     return slm, tlm
 end
 
-function analys(cfg::SHTnsCfg{Complex,T,N}, utheta::Array{ComplexF64}, uphi::Array{ComplexF64}) where {T,N}
+function analys(cfg::SHTnsCfg{TC,T,N}, ur, utheta, uphi) where {TC,T,N}
     @assert cfg.nlat != 0
-    slm = Vector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
-    tlm = Vector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
-    analys!(cfg, copy(utheta), copy(uphi), slm, tlm)
-    return slm, tlm
-end
-
-function analys(cfg::SHTnsCfg{Real,T,N}, ur::Array{Float64}, utheta::Array{Float64}, uphi::Array{Float64}) where {T,N}
-    @assert cfg.nlat != 0
-    qlm = Vector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
-    slm = Vector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
-    tlm = Vector{ComplexF64}(undef, cfg.nlm*cfg.howmany)
-    analys!(cfg, copy(ur), copy(utheta), copy(uphi), qlm, slm, tlm)
-    return qlm, slm, tlm
-end
-
-function analys(cfg::SHTnsCfg{Complex,T,N}, ur::Array{ComplexF64}, utheta::Array{ComplexF64}, uphi::Array{ComplexF64}) where {T,N}
-    @assert cfg.nlat != 0
-    qlm = Vector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
-    slm = Vector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
-    tlm = Vector{ComplexF64}(undef, cfg.nlm_cplx*cfg.howmany)
+    qlm = cfg.howmany > 1 ? Matrix{ComplexF64}(undef, nlm(cfg), cfg.howmany) : Vector{ComplexF64}(undef, nlm(cfg))
+    slm = cfg.howmany > 1 ? Matrix{ComplexF64}(undef, nlm(cfg), cfg.howmany) : Vector{ComplexF64}(undef, nlm(cfg))
+    tlm = cfg.howmany > 1 ? Matrix{ComplexF64}(undef, nlm(cfg), cfg.howmany) : Vector{ComplexF64}(undef, nlm(cfg))
     analys!(cfg, copy(ur), copy(utheta), copy(uphi), qlm, slm, tlm)
     return qlm, slm, tlm
 end

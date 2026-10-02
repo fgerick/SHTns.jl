@@ -69,19 +69,51 @@ end
 			q[nlm(cfg)*i .+ 2:5] .= (i+1)*1.0 
 		end
 		s = t = q
+		_q = similar(q)
+		_s = similar(s)
+		_t = similar(t)
 
 		
 		x = synth(cfg, q)
-		@test analys(cfg, x) ≈ q
+		analys!(cfg, x, _q)
+		@test _q ≈ q
 		# @test synth(cfg, q) ≈ x
 
 		x,y = synth(cfg, q,s) 
-		_q,_s = analys(cfg, x,y)
-		@test _q ≈ q
+		analys!(cfg, x, y, _s, _t)
 		@test _s ≈ s
+		@test _t ≈ t
 		
 		x,y,z = synth(cfg, q,s,t) 
-		_q,_s,_t = analys(cfg, x,y,z)
+		analys!(cfg, x, y, z, _q, _s, _t)
+		# _q,_s,_t = analys(cfg, x,y,z)
+		@test _q ≈ q
+		@test _s ≈ s
+		@test _t ≈ t
+
+
+		q = zeros(ComplexF64, nlm(cfg), howmany)
+		for i in 1:howmany
+			q[2:5, i] .= i*1.0 
+		end
+		s = t = q
+		_q = similar(q)
+		_s = similar(s)
+		_t = similar(t)
+
+		
+		x = synth(cfg, q)
+		_q = analys(cfg, x)
+		@test _q ≈ q
+		# @test synth(cfg, q) ≈ x
+
+		x,y = synth(cfg, q,s) 
+		_s, _t = analys(cfg, x, y)
+		@test _s ≈ s
+		@test _t ≈ t
+		
+		x,y,z = synth(cfg, q,s,t) 
+		_q, _s, _t = analys(cfg, x, y, z)
 		@test _q ≈ q
 		@test _s ≈ s
 		@test _t ≈ t
@@ -89,11 +121,11 @@ end
 	
 end
 
-@testset "contiguous_lat vs. contiguous_phi" begin
+@testset "contiguous_phi=false vs. contiguous_phi=true" begin
 
 	L = 32
 	
-	for transform in (Real,Complex), shtype in (SHTns.QuickInit(; contiguous_lat=true), SHTns.QuickInit(; contiguous_phi=true))
+	for transform in (Real,Complex), shtype in (SHTns.QuickInit(; contiguous_phi=false), SHTns.QuickInit(; contiguous_phi=true))
 		cfg = SHTnsCfg(L; transform, shtype)
 	
 		q = zeros(ComplexF64, nlm(cfg))
