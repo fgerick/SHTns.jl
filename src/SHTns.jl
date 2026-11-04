@@ -8,7 +8,7 @@ using SHTns_jll
 @static if haskey(ENV, "SHTNS_PATH")
     const libshtns = ENV["SHTNS_PATH"]
 else
-    const libshtns = SHTns_jll.LibSHTns
+    const libshtns = SHTns_jll.LibSHTns_path
 end
 
 
